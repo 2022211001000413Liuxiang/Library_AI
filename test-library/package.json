@@ -1,0 +1,26 @@
+{
+  "name": "test-library",
+  "version": "1.0.0",
+  "description": "图书馆管理系统前端 Demo",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "core-js": "^3.8.3",
+    "element-ui": "^2.15.13",
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.1"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "~5.0.0",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

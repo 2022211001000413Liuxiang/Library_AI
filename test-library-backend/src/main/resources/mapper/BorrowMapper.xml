@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.library.mapper.BorrowMapper">
+
+    <resultMap id="BaseResultMap" type="com.library.entity.Borrow">
+        <id column="id" property="id"/>
+        <result column="book_id" property="bookId"/>
+        <result column="user_id" property="userId"/>
+        <result column="borrow_date" property="borrowDate"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="return_date" property="returnDate"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="bookName" property="bookName"/>
+        <result column="userName" property="userName"/>
+    </resultMap>
+
+    <select id="selectBorrowPage" resultMap="BaseResultMap">
+        SELECT b.*, bk.name as bookName, u.name as userName
+        FROM borrow b
+        LEFT JOIN book bk ON b.book_id = bk.id
+        LEFT JOIN user u ON b.user_id = u.id
+        <where>
+            <if test="bookName != null and bookName != ''">
+                AND bk.name LIKE CONCAT('%', #{bookName}, '%')
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+
+</mapper>
