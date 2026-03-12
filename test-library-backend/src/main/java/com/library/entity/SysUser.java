@@ -19,6 +19,7 @@ public class SysUser {
     private Integer gender;
     private String phone;
     private String email;
+    private String avatar;
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

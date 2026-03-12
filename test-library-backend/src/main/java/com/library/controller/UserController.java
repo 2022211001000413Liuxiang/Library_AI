@@ -5,8 +5,10 @@ import com.library.entity.SysUser;
 import com.library.entity.User;
 import com.library.mapper.SysUserMapper;
 import com.library.service.UserService;
+import com.library.utils.OssUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +23,9 @@ public class UserController {
 
     @Autowired
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private OssUtils ossUtils;
 
     @GetMapping("/users")
     public Map<String, Object> getUsers(
@@ -140,6 +145,54 @@ public class UserController {
         // 模拟修改密码成功
         result.put("success", true);
         result.put("message", "密码修改成功");
+        return result;
+    }
+
+    /**
+     * 上传头像到 OSS
+     */
+    @PostMapping("/avatar/upload")
+    public Map<String, Object> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        if (file.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "文件不能为空");
+            return result;
+        }
+
+        try {
+            // 上传到 OSS
+            String avatarUrl = ossUtils.uploadFile(file, "avatars");
+            result.put("success", true);
+            result.put("url", avatarUrl);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "上传失败: " + e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 更新用户头像
+     */
+    @PutMapping("/avatar")
+    public Map<String, Object> updateAvatar(@RequestBody Map<String, Object> params) {
+        Map<String, Object> result = new HashMap<>();
+        Long userId = params.get("userId") != null ? Long.parseLong(params.get("userId").toString()) : null;
+        String avatarUrl = params.get("avatarUrl") != null ? params.get("avatarUrl").toString() : null;
+
+        if (userId == null || avatarUrl == null) {
+            result.put("success", false);
+            result.put("message", "参数不完整");
+            return result;
+        }
+
+        SysUser sysUser = new SysUser();
+        sysUser.setId(userId);
+        sysUser.setAvatar(avatarUrl);
+
+        int rows = sysUserMapper.updateById(sysUser);
+        result.put("success", rows > 0);
         return result;
     }
 }

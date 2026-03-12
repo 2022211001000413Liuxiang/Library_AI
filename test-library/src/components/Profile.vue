@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import { getProfile, updateProfile, changePassword } from '@/api/profile'
+import { getProfile, updateProfile, changePassword, uploadAvatar, updateAvatar } from '@/api/profile'
 
 export default {
   name: 'Profile',
@@ -214,15 +214,28 @@ export default {
       }
       return isJPG && isLt2M
     },
-    handleAvatarUpload(options) {
-      // 模拟上传头像
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        this.userInfo.avatar = e.target.result
-        this.form.avatar = e.target.result
-        this.$message.success('头像上传成功')
+    async handleAvatarUpload(options) {
+      const file = options.file
+      try {
+        // 上传到 OSS
+        const res = await uploadAvatar(file)
+        if (res.success) {
+          // 保存头像 URL 到数据库
+          await updateAvatar(this.userInfo.id, res.url)
+          // 更新本地显示
+          this.userInfo.avatar = res.url
+          // 更新 localStorage
+          const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+          userInfo.avatar = res.url
+          localStorage.setItem('userInfo', JSON.stringify(userInfo))
+          this.$message.success('头像上传成功')
+        } else {
+          this.$message.error(res.message || '头像上传失败')
+        }
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        this.$message.error('头像上传失败')
       }
-      reader.readAsDataURL(options.file)
     },
     async handleSubmit() {
       this.$refs.form.validate(async valid => {

@@ -7,6 +7,7 @@ import com.library.mapper.SysRoleMapper;
 import com.library.mapper.SysRolePermissionMapper;
 import com.library.mapper.SysUserMapper;
 import com.library.mapper.SysUserRoleMapper;
+import com.library.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,6 +84,7 @@ public class AuthController {
         userData.put("gender", sysUser.getGender());
         userData.put("phone", sysUser.getPhone());
         userData.put("email", sysUser.getEmail());
+        userData.put("avatar", sysUser.getAvatar());
         userData.put("roles", roleKeys);
         userData.put("permissions", permissions);
 
@@ -90,10 +92,14 @@ public class AuthController {
         String mainRole = roleKeys.isEmpty() ? "reader" : roleKeys.get(0);
         String userType = "admin".equals(mainRole) || "librarian".equals(mainRole) ? "admin" : "reader";
 
+        // 生成 JWT token
+        String token = JwtUtils.generateToken(sysUser.getId(), sysUser.getUsername(), mainRole);
+
         result.put("success", true);
         result.put("message", "登录成功");
         result.put("userType", userType);
         result.put("role", mainRole);
+        result.put("token", token);
         result.put("data", userData);
 
         return result;

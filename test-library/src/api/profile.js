@@ -26,3 +26,26 @@ export function changePassword(data) {
     data
   })
 }
+
+// 上传头像到 OSS
+export function uploadAvatar(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/avatar/upload',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+// 更新头像 URL
+export function updateAvatar(userId, avatarUrl) {
+  return request({
+    url: '/avatar',
+    method: 'put',
+    data: { userId, avatarUrl }
+  })
+}

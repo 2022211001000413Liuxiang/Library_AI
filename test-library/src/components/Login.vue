@@ -79,6 +79,8 @@ export default {
               localStorage.setItem('userRole', res.role)
               // 保存权限列表
               localStorage.setItem('permissions', JSON.stringify(res.data.permissions || []))
+              // 保存 token
+              localStorage.setItem('token', res.token)
 
               this.$message.success(res.message || '登录成功')
               this.$router.push('/home')

@@ -67,7 +67,7 @@
           <div class="header-right">
             <el-dropdown trigger="click" class="user-dropdown" @command="handleUserCommand">
               <div class="user-info">
-                <el-avatar :size="32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
+                <el-avatar :size="32" :src="userAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"></el-avatar>
                 <span class="username">{{ userName }} ({{ roleName }})</span>
                 <i class="el-icon-arrow-down"></i>
               </div>
@@ -100,7 +100,8 @@ export default {
       userInfo: null,
       userType: '',
       userRole: '',
-      userName: ''
+      userName: '',
+      userAvatar: ''
     }
   },
   computed: {
@@ -143,6 +144,7 @@ export default {
       if (userInfoStr) {
         this.userInfo = JSON.parse(userInfoStr)
         this.userName = this.userInfo.name || this.userInfo.username
+        this.userAvatar = this.userInfo.avatar || ''
       }
     },
     toggleSidebar() {
@@ -161,6 +163,7 @@ export default {
             type: 'warning'
           })
           await logout()
+          localStorage.removeItem('token')
           localStorage.removeItem('userInfo')
           localStorage.removeItem('userType')
           localStorage.removeItem('userRole')

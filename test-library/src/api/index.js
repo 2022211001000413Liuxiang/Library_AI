@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import router from '../router'
 
 const service = axios.create({
   baseURL: 'http://localhost:8081/api',
@@ -9,6 +10,12 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   config => {
+    // 从 localStorage 获取 token
+    const token = localStorage.getItem('token')
+    if (token) {
+      // 将 token 添加到请求头
+      config.headers['Authorization'] = 'Bearer ' + token
+    }
     return config
   },
   error => {
@@ -28,7 +35,23 @@ service.interceptors.response.use(
     return res
   },
   error => {
-    Message.error(error.message || '网络错误')
+    // 处理 token 过期或未授权的情况
+    if (error.response) {
+      if (error.response.status === 401) {
+        // 清除 localStorage 中的用户信息
+        localStorage.removeItem('token')
+        localStorage.removeItem('userInfo')
+        localStorage.removeItem('userType')
+        localStorage.removeItem('userRole')
+        localStorage.removeItem('permissions')
+        Message.error('登录已过期，请重新登录')
+        router.push('/login')
+      } else {
+        Message.error(error.response.data?.message || '网络错误')
+      }
+    } else {
+      Message.error(error.message || '网络错误')
+    }
     return Promise.reject(error)
   }
 )
