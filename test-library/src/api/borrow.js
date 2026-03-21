@@ -33,3 +33,12 @@ export function returnBook(id) {
     method: 'put'
   })
 }
+
+// 获取当前用户的借阅记录
+export function getMyBorrows(params) {
+  return request({
+    url: '/borrows/my',
+    method: 'get',
+    params
+  })
+}

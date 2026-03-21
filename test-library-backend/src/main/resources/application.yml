@@ -33,3 +33,10 @@ aliyun:
     access-key-id: ${OSS_ACCESS_KEY_ID}
     access-key-secret: ${OSS_ACCESS_KEY_SECRET}
     bucket-name: ${OSS_BUCKET_NAME:liuxiang1234}
+
+# AI 配置（使用环境变量）
+ai:
+  provider: ${AI_PROVIDER:qwen}
+  api-key: ${AI_API_KEY:sk-7992a7d9248d4cb0b9148d88a76f9e30}
+  model: ${AI_MODEL:qwen-turbo}
+  endpoint: ${AI_ENDPOINT:https://dashscope.aliyuncs.com/compatible-mode/v1}

@@ -30,6 +30,11 @@ public class BorrowService {
         return borrowMapper.selectBorrowPage(page, bookName, userName, status);
     }
 
+    public IPage<Borrow> getBorrowsByUserId(int current, int size, Long userId, Integer status) {
+        Page<Borrow> page = new Page<>(current, size);
+        return borrowMapper.selectBorrowPageByUserId(page, userId, status);
+    }
+
     public Borrow getById(Long id) {
         return borrowMapper.selectById(id);
     }

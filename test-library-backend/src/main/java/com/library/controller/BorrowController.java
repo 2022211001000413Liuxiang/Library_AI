@@ -54,4 +54,23 @@ public class BorrowController {
         result.put("success", borrowService.returnBook(id));
         return result;
     }
+
+    /**
+     * 获取当前用户的借阅记录（读者专用）
+     */
+    @GetMapping("/my")
+    public Map<String, Object> getMyBorrows(
+            @RequestParam(defaultValue = "1") int current,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer status,
+            @RequestParam Long userId) {
+        IPage<Borrow> page = borrowService.getBorrowsByUserId(current, size, userId, status);
+        Map<String, Object> result = new HashMap<>();
+        result.put("data", page.getRecords());
+        result.put("total", page.getTotal());
+        result.put("current", page.getCurrent());
+        result.put("size", page.getSize());
+        result.put("pages", page.getPages());
+        return result;
+    }
 }

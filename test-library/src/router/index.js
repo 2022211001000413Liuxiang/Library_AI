@@ -4,9 +4,11 @@ import Login from '@/components/Login.vue'
 import Home from '@/components/Home.vue'
 import Books from '@/components/Books.vue'
 import Borrow from '@/components/Borrow.vue'
+import ReaderBorrow from '@/components/ReaderBorrow.vue'
 import Users from '@/components/Users.vue'
 import Profile from '@/components/Profile.vue'
 import Settings from '@/components/Settings.vue'
+import AiRobot from '@/components/AiRobot.vue'
 
 Vue.use(VueRouter)
 
@@ -36,7 +38,13 @@ const routes = [
     path: '/borrow',
     name: 'Borrow',
     component: Borrow,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresLibrarian: true }
+  },
+  {
+    path: '/my-borrow',
+    name: 'MyBorrow',
+    component: ReaderBorrow,
+    meta: { requiresAuth: true, requiresReader: true }
   },
   {
     path: '/users',
@@ -55,6 +63,12 @@ const routes = [
     name: 'Settings',
     component: Settings,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/ai-robot',
+    name: 'AiRobot',
+    component: AiRobot,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -86,6 +100,10 @@ router.beforeEach((to, from, next) => {
       next('/home')
     } else if (to.meta.requiresLibrarian && userRole !== 'admin' && userRole !== 'librarian') {
       // 需要图书管理员权限
+      Vue.prototype.$message.warning('您没有权限访问该页面')
+      next('/home')
+    } else if (to.meta.requiresReader && userRole !== 'reader') {
+      // 需要读者权限
       Vue.prototype.$message.warning('您没有权限访问该页面')
       next('/home')
     } else {

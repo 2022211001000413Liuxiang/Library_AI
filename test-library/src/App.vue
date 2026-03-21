@@ -29,9 +29,15 @@
           </el-menu-item>
 
           <!-- 借阅管理/我的借阅：根据角色显示 -->
-          <el-menu-item index="/borrow">
+          <el-menu-item :index="isReader ? '/my-borrow' : '/borrow'">
             <i class="el-icon-s-order"></i>
             <span slot="title">{{ isReader ? '我的借阅' : '借阅管理' }}</span>
+          </el-menu-item>
+
+          <!-- AI 图书助手：所有用户可见 -->
+          <el-menu-item index="/ai-robot">
+            <i class="el-icon-microphone"></i>
+            <span slot="title">AI 图书助手</span>
           </el-menu-item>
 
           <!-- 用户管理：根据权限显示 -->

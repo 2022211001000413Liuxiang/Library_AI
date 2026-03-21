@@ -9,4 +9,6 @@ import org.apache.ibatis.annotations.Param;
 public interface BorrowMapper extends BaseMapper<Borrow> {
 
     IPage<Borrow> selectBorrowPage(Page<Borrow> page, @Param("bookName") String bookName, @Param("userName") String userName, @Param("status") Integer status);
+
+    IPage<Borrow> selectBorrowPageByUserId(Page<Borrow> page, @Param("userId") Long userId, @Param("status") Integer status);
 }

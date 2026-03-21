@@ -20,7 +20,7 @@
         SELECT b.*, bk.name as bookName, u.name as userName
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
-        LEFT JOIN user u ON b.user_id = u.id
+        LEFT JOIN sys_user u ON b.user_id = u.id
         <where>
             <if test="bookName != null and bookName != ''">
                 AND bk.name LIKE CONCAT('%', #{bookName}, '%')
@@ -28,6 +28,20 @@
             <if test="userName != null and userName != ''">
                 AND u.name LIKE CONCAT('%', #{userName}, '%')
             </if>
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+
+    <select id="selectBorrowPageByUserId" resultMap="BaseResultMap">
+        SELECT b.*, bk.name as bookName, u.name as userName
+        FROM borrow b
+        LEFT JOIN book bk ON b.book_id = bk.id
+        LEFT JOIN sys_user u ON b.user_id = u.id
+        <where>
+            b.user_id = #{userId}
             <if test="status != null">
                 AND b.status = #{status}
             </if>
