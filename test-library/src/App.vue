@@ -2,57 +2,61 @@
   <div id="app">
     <el-container style="height: 100vh">
       <!-- 左侧导航 -->
-      <el-aside width="220px" style="background: linear-gradient(180deg, #1a1f2e 0%, #263145 100%)">
-        <div class="logo">
+      <el-aside
+        :width="isCollapse ? '64px' : '200px'"
+        class="sidebar"
+        :class="{ 'sidebar--collapse': isCollapse }"
+      >
+        <!-- Logo 区域 -->
+        <div class="logo" :class="{ 'logo--collapse': isCollapse }">
           <i class="el-icon-collection"></i>
-          <span>图书馆管理系统</span>
+          <transition name="fade">
+            <span v-if="!isCollapse" class="logo-text">图书馆管理系统</span>
+          </transition>
         </div>
+
+        <!-- 菜单 -->
         <el-menu
-          :default-active="$route.path"
+          :default-active="currentActive"
           background-color="transparent"
           text-color="#8c92a4"
           active-text-color="#fff"
           :router="true"
           :unique-opened="true"
+          :collapse="isCollapse"
+          :collapse-transition="false"
           class="sidebar-menu"
         >
-          <!-- 首页：所有用户可见 -->
           <el-menu-item index="/home">
             <i class="el-icon-s-home"></i>
             <span slot="title">首页</span>
           </el-menu-item>
 
-          <!-- 图书管理：根据权限显示 -->
           <el-menu-item index="/books" v-if="hasPermission('book:manage')">
             <i class="el-icon-reading"></i>
             <span slot="title">图书管理</span>
           </el-menu-item>
 
-          <!-- 借阅管理/我的借阅：根据角色显示 -->
           <el-menu-item :index="isReader ? '/my-borrow' : '/borrow'">
             <i class="el-icon-s-order"></i>
             <span slot="title">{{ isReader ? '我的借阅' : '借阅管理' }}</span>
           </el-menu-item>
 
-          <!-- AI 图书助手：所有用户可见 -->
           <el-menu-item index="/ai-robot">
             <i class="el-icon-microphone"></i>
             <span slot="title">AI 图书助手</span>
           </el-menu-item>
 
-          <!-- 用户管理：根据权限显示 -->
           <el-menu-item index="/users" v-if="hasPermission('user:manage')">
             <i class="el-icon-user"></i>
             <span slot="title">用户管理</span>
           </el-menu-item>
 
-          <!-- 个人中心：所有用户可见 -->
           <el-menu-item index="/profile">
             <i class="el-icon-user-solid"></i>
             <span slot="title">个人中心</span>
           </el-menu-item>
 
-          <!-- 系统设置：根据权限显示 -->
           <el-menu-item index="/settings" v-if="hasPermission('settings:manage')">
             <i class="el-icon-s-tools"></i>
             <span slot="title">系统设置</span>
@@ -61,30 +65,47 @@
       </el-aside>
 
       <!-- 右侧内容 -->
-      <el-container>
+      <el-container class="main-wrapper">
+        <!-- Header -->
         <el-header class="header">
           <div class="header-left">
-            <i class="el-icon-s-fold toggle-btn" @click="toggleSidebar"></i>
-            <el-breadcrumb separator="/">
+            <div class="toggle-btn" @click="toggleSidebar">
+              <i :class="isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold'"></i>
+            </div>
+            <el-breadcrumb separator="/" class="breadcrumb">
               <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-              <el-breadcrumb-item v-if="$route.path !== '/home'">{{ $route.name }}</el-breadcrumb-item>
+              <el-breadcrumb-item v-if="$route.path !== '/home'">{{ getPageTitle }}</el-breadcrumb-item>
             </el-breadcrumb>
           </div>
           <div class="header-right">
             <el-dropdown trigger="click" class="user-dropdown" @command="handleUserCommand">
               <div class="user-info">
-                <el-avatar :size="32" :src="userAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"></el-avatar>
-                <span class="username">{{ userName }} ({{ roleName }})</span>
-                <i class="el-icon-arrow-down"></i>
+                <el-avatar
+                  :size="32"
+                  :src="userAvatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+                ></el-avatar>
+                <div class="user-detail">
+                  <span class="username">{{ userName }}</span>
+                  <span class="role-tag" :class="`role-tag--${userRole}`">{{ roleName }}</span>
+                </div>
+                <i class="el-icon-arrow-down el-icon--right"></i>
               </div>
               <el-dropdown-menu slot="dropdown" class="user-dropdown-menu">
-                <el-dropdown-item command="profile"><i class="el-icon-user"></i> 个人中心</el-dropdown-item>
-                <el-dropdown-item command="settings" v-if="hasPermission('settings:manage')"><i class="el-icon-setting"></i> 系统设置</el-dropdown-item>
-                <el-dropdown-item divided command="logout"><i class="el-icon-switch-button"></i> 退出登录</el-dropdown-item>
+                <el-dropdown-item command="profile">
+                  <i class="el-icon-user"></i> 个人中心
+                </el-dropdown-item>
+                <el-dropdown-item command="settings" v-if="hasPermission('settings:manage')">
+                  <i class="el-icon-setting"></i> 系统设置
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">
+                  <i class="el-icon-switch-button"></i> 退出登录
+                </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
         </el-header>
+
+        <!-- 主内容区 -->
         <el-main class="main-content">
           <transition name="fade-transform" mode="out-in">
             <router-view />
@@ -111,34 +132,41 @@ export default {
     }
   },
   computed: {
-    // 判断是否为读者
+    currentActive() {
+      return this.$route.path
+    },
     isReader() {
       return this.userType === 'reader'
     },
-    // 判断是否为系统管理员
     isAdmin() {
       return this.userRole === 'admin'
     },
-    // 判断是否为图书管理员
     isLibrarian() {
       return this.userRole === 'librarian'
     },
-    // 角色名称
     roleName() {
       if (this.userRole === 'admin') return '系统管理员'
       if (this.userRole === 'librarian') return '图书管理员'
       return '读者'
+    },
+    getPageTitle() {
+      const routeMap = {
+        '/home': '首页',
+        '/books': '图书管理',
+        '/borrow': '借阅管理',
+        '/my-borrow': '我的借阅',
+        '/users': '用户管理',
+        '/profile': '个人中心',
+        '/settings': '系统设置',
+        '/ai-robot': 'AI 图书助手'
+      }
+      return routeMap[this.$route.path] || this.$route.name
     }
   },
   created() {
     this.loadUserInfo()
   },
-  updated() {
-    // 每次组件更新后都重新加载用户信息，确保显示正确的登录用户
-    this.loadUserInfo()
-  },
   methods: {
-    // 判断是否有指定权限
     hasPermission(permKey) {
       const permissions = JSON.parse(localStorage.getItem('permissions') || '[]')
       return permissions.includes(permKey)
@@ -185,19 +213,85 @@ export default {
 }
 </script>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-#app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 15px;
+<style scoped>
+/* ========== 侧边栏 ========== */
+.sidebar {
+  background: var(--color-bg-sidebar);
+  transition: width var(--transition-normal);
+  overflow: hidden;
 }
 
+.sidebar-menu {
+  border-right: none;
+  padding-top: 10px;
+}
+
+.sidebar-menu:not(.el-menu--collapse) {
+  width: 100%;
+}
+
+.sidebar-menu .el-menu-item {
+  height: 50px;
+  line-height: 50px;
+  margin: 4px 10px;
+  padding-left: 20px !important;
+  border-radius: var(--radius-small);
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-base);
+  position: relative;
+}
+
+.sidebar-menu .el-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--color-primary);
+  border-radius: 0 3px 3px 0;
+  transition: height var(--transition-fast);
+}
+
+.sidebar-menu .el-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.sidebar-menu .el-menu-item:hover::before {
+  height: 20px;
+}
+
+.sidebar-menu .el-menu-item.is-active {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.sidebar-menu .el-menu-item.is-active::before {
+  height: 24px;
+}
+
+.sidebar-menu .el-menu-item i {
+  margin-right: 10px;
+  font-size: 18px;
+  width: 20px;
+}
+
+.sidebar-menu .el-menu-item span {
+  font-weight: 500;
+}
+
+/* 折叠状态 */
+.sidebar--collapse .el-menu-item {
+  padding-left: 22px !important;
+  justify-content: center;
+}
+
+.sidebar--collapse .el-menu-item i {
+  margin-right: 0;
+}
+
+/* ========== Logo ========== */
 .logo {
   height: 60px;
   display: flex;
@@ -205,199 +299,192 @@ export default {
   justify-content: center;
   gap: 10px;
   color: #fff;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%);
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+  transition: all var(--transition-normal);
+  overflow: hidden;
 }
+
 .logo i {
-  font-size: 24px;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
-.sidebar-menu {
-  border-right: none;
-  padding-top: 10px;
-}
-.sidebar-menu .el-menu-item {
-  height: 56px;
-  line-height: 56px;
-  margin: 4px 12px;
-  border-radius: 8px;
-  transition: all 0.3s;
-  font-size: 15px;
-}
-.sidebar-menu .el-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-.sidebar-menu .el-menu-item.is-active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-.sidebar-menu .el-menu-item i {
-  margin-right: 10px;
-  font-size: 20px;
+.logo--collapse {
+  justify-content: center;
+  padding: 0;
 }
 
+.logo-text {
+  white-space: nowrap;
+}
+
+/* ========== Header ========== */
 .header {
-  background: #fff;
+  background: var(--color-bg-header);
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
+  padding: 0 var(--spacing-lg);
+  height: var(--header-height);
+  position: sticky;
+  top: 0;
   z-index: 100;
-  height: 64px;
 }
+
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-base);
 }
+
 .toggle-btn {
-  font-size: 20px;
-  cursor: pointer;
-  color: #606266;
-  transition: color 0.3s;
-}
-.toggle-btn:hover {
-  color: #409EFF;
-}
-.header-right {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-.header-right .el-badge__content {
-  top: 10px;
-  right: 8px;
-}
-.header-right .el-icon-bell {
-  font-size: 20px;
-  color: #606266;
+  justify-content: center;
+  border-radius: var(--radius-small);
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all var(--transition-fast);
 }
-.header-right .el-icon-bell:hover {
-  color: #409EFF;
+
+.toggle-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
 }
+
+.toggle-btn i {
+  font-size: 20px;
+  color: var(--color-text-regular);
+  transition: color var(--transition-fast);
+}
+
+.toggle-btn:hover i {
+  color: var(--color-primary);
+}
+
+.breadcrumb {
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumb >>> .el-breadcrumb__inner {
+  color: var(--color-text-secondary);
+}
+
+.breadcrumb >>> .el-breadcrumb__inner a {
+  color: var(--color-text-secondary);
+  font-weight: normal;
+}
+
+.breadcrumb >>> .el-breadcrumb__inner a:hover {
+  color: var(--color-primary);
+}
+
+.breadcrumb >>> .el-breadcrumb__separator {
+  color: var(--color-text-placeholder);
+}
+
+/* ========== 用户信息 ========== */
 .user-dropdown {
   cursor: pointer;
 }
+
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
+  padding: 6px 12px;
+  border-radius: var(--radius-small);
+  transition: all var(--transition-fast);
 }
+
+.user-info:hover {
+  background: rgba(102, 126, 234, 0.08);
+}
+
+.user-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .username {
-  color: #303133;
-  font-size: 15px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.3;
 }
+
+.role-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+.role-tag--admin {
+  background: rgba(245, 87, 108, 0.15);
+  color: var(--color-danger);
+}
+
+.role-tag--librarian {
+  background: rgba(102, 126, 234, 0.15);
+  color: var(--color-primary);
+}
+
+.role-tag--reader {
+  background: rgba(67, 233, 123, 0.15);
+  color: #2eb872;
+}
+
 .user-dropdown-menu {
-  margin-top: 10px;
+  margin-top: 8px;
 }
+
 .user-dropdown-menu i {
   margin-right: 8px;
+  color: var(--color-primary);
+}
+
+/* ========== 主内容区 ========== */
+.main-wrapper {
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .main-content {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  padding: 24px;
-  min-height: calc(100vh - 64px);
+  background: var(--color-bg-page);
+  padding: var(--spacing-lg);
+  min-height: calc(100vh - var(--header-height));
 }
 
-.page-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.page-title::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 2px;
+/* ========== 过渡动画 ========== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-fast);
 }
 
-.custom-card {
-  border-radius: 12px;
-  overflow: hidden;
-}
-.custom-card .el-card__header {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  padding: 16px 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-.custom-card .el-card__header span {
-  font-weight: 600;
-  color: #303133;
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 
-.el-button--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-.el-button--primary:hover {
-  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
-}
-
-.el-table {
-  border-radius: 8px;
-  overflow: hidden;
-  font-size: 15px;
-}
-.el-table th {
-  background: #f5f7fa !important;
-  color: #606266;
-  font-weight: 600;
-  font-size: 15px;
-}
-.el-table td {
-  font-size: 15px;
-}
-.el-table--border::after,
-.el-table--border::before {
-  background: #ebeef5;
-}
-
-.el-pagination {
-  margin-top: 20px;
-  text-align: right;
-}
-.el-pagination .el-pager li.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
+/* 路由过渡 */
 .fade-transform-leave-active,
 .fade-transform-enter-active {
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
+
 .fade-transform-enter {
   opacity: 0;
   transform: translateX(20px);
 }
+
 .fade-transform-leave-to {
   opacity: 0;
   transform: translateX(-20px);
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
 }
 </style>

@@ -1,0 +1,60 @@
+:root {
+  /* Primary Colors - 紫色系 */
+  --color-primary: #667eea;
+  --color-primary-light: #8b9ff8;
+  --color-primary-dark: #5a6fd6;
+
+  /* Secondary Colors */
+  --color-success: #43e97b;
+  --color-warning: #f093fb;
+  --color-danger: #f5576c;
+  --color-info: #4facfe;
+
+  /* Background Colors */
+  --color-bg-page: #f0f2f5;
+  --color-bg-card: #ffffff;
+  --color-bg-sidebar: #001529;
+  --color-bg-header: #ffffff;
+
+  /* Text Colors */
+  --color-text-primary: #303133;
+  --color-text-regular: #606266;
+  --color-text-secondary: #909399;
+  --color-text-placeholder: #c0c4cc;
+
+  /* Border & Shadow */
+  --color-border: #dcdfe6;
+  --shadow-light: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.15);
+  --shadow-primary: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+  /* Border Radius */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-base: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+
+  /* Layout */
+  --sidebar-width: 200px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 56px;
+}

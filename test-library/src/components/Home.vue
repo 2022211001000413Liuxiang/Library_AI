@@ -1,52 +1,57 @@
 <template>
-  <div class="home-page">
+  <div class="home-page page-container">
     <!-- 欢迎横幅 -->
     <div class="welcome-banner">
       <div class="welcome-content">
-        <h1>欢迎回来，管理员</h1>
+        <h1>欢迎回来，{{ userName }}</h1>
         <p>今天是 {{ currentDate }}，祝您工作顺利</p>
       </div>
       <div class="welcome-illustration">
         <i class="el-icon-reading"></i>
       </div>
+      <div class="banner-decoration"></div>
     </div>
 
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="(item, index) in stats" :key="index">
-        <el-card shadow="hover" class="stat-card" :class="'stat-card-' + (index + 1)">
-          <div class="stat-icon">
+      <el-col :xs="24" :sm="12" :lg="6" v-for="(item, index) in stats" :key="index">
+        <div class="stat-card" :class="`stat-card--${item.type}`">
+          <div class="stat-card__icon">
             <i :class="item.icon"></i>
           </div>
-          <div class="stat-info">
-            <div class="stat-value">{{ item.value }}</div>
-            <div class="stat-label">{{ item.label }}</div>
-            <div class="stat-trend" v-if="item.trend">
-              <i :class="item.trend > 0 ? 'el-icon-top' : 'el-icon-bottom'" :style="{ color: item.trend > 0 ? '#67C23A' : '#F56C6C' }"></i>
-              <span :style="{ color: item.trend > 0 ? '#67C23A' : '#F56C6C' }">{{ Math.abs(item.trend) }}%</span>
-              <span class="trend-text">较上周</span>
-            </div>
+          <div class="stat-card__content">
+            <div class="stat-card__value">{{ item.value }}</div>
+            <div class="stat-card__label">{{ item.label }}</div>
           </div>
-        </el-card>
+          <div class="stat-card__trend" v-if="item.trend">
+            <i :class="item.trend > 0 ? 'el-icon-top' : 'el-icon-bottom'"></i>
+            <span>{{ Math.abs(item.trend) }}%</span>
+          </div>
+        </div>
       </el-col>
     </el-row>
 
     <!-- 内容区域 -->
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="content-row">
       <!-- 最近借阅 -->
-      <el-col :span="14">
+      <el-col :xs="24" :lg="14">
         <el-card shadow="hover" class="custom-card">
           <div slot="header" class="card-header">
-            <span><i class="el-icon-s-order"></i> 最近借阅</span>
-            <el-button type="text" size="small">查看更多</el-button>
+            <span>
+              <i class="el-icon-s-order"></i>
+              最近借阅
+            </span>
+            <el-button type="primary" text size="small" @click="$router.push(isReader ? '/my-borrow' : '/borrow')">
+              查看更多 <i class="el-icon-arrow-right el-icon--right"></i>
+            </el-button>
           </div>
-          <el-table :data="recentBorrows" style="width: 100%" :header-cell-style="{ background: '#f5f7fa' }">
+          <el-table :data="recentBorrows" style="width: 100%" :header-cell-style="{ background: '#fafbfc' }">
             <el-table-column prop="bookName" label="书名" min-width="150"></el-table-column>
             <el-table-column prop="userName" label="借阅人" width="100"></el-table-column>
             <el-table-column prop="borrowDate" label="借阅日期" width="120"></el-table-column>
-            <el-table-column prop="status" label="状态" width="100">
+            <el-table-column prop="status" label="状态" width="100" align="center">
               <template slot-scope="scope">
-                <el-tag :type="scope.row.status === 0 ? 'primary' : 'success'" size="small">
+                <el-tag :type="scope.row.status === 0 ? 'primary' : 'success'" size="small" effect="dark">
                   {{ scope.row.status === 0 ? '借阅中' : '已归还' }}
                 </el-tag>
               </template>
@@ -56,21 +61,28 @@
       </el-col>
 
       <!-- 系统公告 -->
-      <el-col :span="10">
+      <el-col :xs="24" :lg="10">
         <el-card shadow="hover" class="custom-card">
           <div slot="header" class="card-header">
-            <span><i class="el-icon-bell"></i> 系统公告</span>
+            <span>
+              <i class="el-icon-bell"></i>
+              系统公告
+            </span>
           </div>
           <div class="notice-list">
-            <div class="notice-item" v-for="(item, index) in notices" :key="index">
-              <div class="notice-icon" :class="'notice-icon-' + (index + 1)">
-                <i class="el-icon-bell"></i>
+            <div
+              class="notice-item"
+              v-for="(item, index) in notices"
+              :key="index"
+              :class="{ 'notice-item--highlight': index === 0 }"
+            >
+              <div class="notice-item__icon" :class="`notice-item__icon--${index + 1}`">
+                <i :class="index === 0 ? 'el-icon-magic-stick' : 'el-icon-bell'"></i>
               </div>
-              <div class="notice-content">
-                <div class="notice-title">{{ item.title }}</div>
-                <div class="notice-desc">{{ item.desc }}</div>
+              <div class="notice-item__content">
+                <div class="notice-item__title">{{ item.title }}</div>
+                <div class="notice-item__desc">{{ item.desc }}</div>
               </div>
-              <div class="notice-date">{{ item.date }}</div>
             </div>
           </div>
         </el-card>
@@ -82,32 +94,35 @@
       <el-col :span="24">
         <el-card shadow="hover" class="custom-card">
           <div slot="header" class="card-header">
-            <span><i class="el-icon-s-tools"></i> 快捷操作</span>
+            <span>
+              <i class="el-icon-s-grid"></i>
+              快捷操作
+            </span>
           </div>
           <div class="quick-actions">
             <div class="quick-action-item" @click="$router.push('/books')">
-              <div class="quick-action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="el-icon-plus"></i>
+              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="el-icon-reading"></i>
               </div>
-              <span>添加图书</span>
+              <span class="quick-action-item__label">图书管理</span>
             </div>
-            <div class="quick-action-item" @click="$router.push('/borrow')">
-              <div class="quick-action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="quick-action-item" @click="$router.push(isReader ? '/my-borrow' : '/borrow')">
+              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <i class="el-icon-sold-out"></i>
               </div>
-              <span>借阅图书</span>
+              <span class="quick-action-item__label">{{ isReader ? '我的借阅' : '借阅管理' }}</span>
             </div>
-            <div class="quick-action-item" @click="$router.push('/users')">
-              <div class="quick-action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="el-icon-user-plus"></i>
+            <div class="quick-action-item" @click="$router.push('/ai-robot')">
+              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="el-icon-microphone"></i>
               </div>
-              <span>添加用户</span>
+              <span class="quick-action-item__label">AI 助手</span>
             </div>
-            <div class="quick-action-item">
-              <div class="quick-action-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                <i class="el-icon-data-analysis"></i>
+            <div class="quick-action-item" @click="$router.push('/profile')">
+              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="el-icon-user"></i>
               </div>
-              <span>数据统计</span>
+              <span class="quick-action-item__label">个人中心</span>
             </div>
           </div>
         </el-card>
@@ -124,37 +139,61 @@ export default {
   name: 'Home',
   data() {
     return {
-      currentDate: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }),
+      userName: '',
+      userType: '',
+      currentDate: new Date().toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+      }),
       stats: [],
       recentBorrows: [],
       notices: [
-        { title: '春节期间图书馆开放时间调整', desc: '2月10日至2月17日营业时间调整为9:00-17:00', date: '01-10' },
-        { title: '新书上架通知', desc: '本月新增图书200册，欢迎借阅', date: '01-08' },
-        { title: '逾期罚款标准调整', desc: '逾期罚款调整为每日0.5元', date: '01-05' }
+        { title: '新书上架通知', desc: '本月新增热门图书，欢迎借阅' },
+        { title: '逾期罚款标准调整', desc: '逾期罚款调整为每日0.5元' },
+        { title: '春节期间开放时间', desc: '节日期间营业时间调整为9:00-17:00' }
       ]
     }
   },
+  computed: {
+    isReader() {
+      return this.userType === 'reader'
+    }
+  },
   created() {
+    this.loadUserInfo()
     this.loadStats()
     this.loadRecentBorrows()
   },
   methods: {
+    loadUserInfo() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+      this.userName = userInfo.name || userInfo.username || '管理员'
+      this.userType = localStorage.getItem('userType') || ''
+    },
     async loadStats() {
       try {
         const res = await getStats()
         this.stats = [
-          { icon: 'el-icon-reading', value: res.totalBooks || 0, label: '图书总数', trend: 12 },
-          { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '已借出', trend: -5 },
-          { icon: 'el-icon-user', value: res.totalUsers || 0, label: '用户总数', trend: 8 },
-          { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', trend: -20 }
+          { icon: 'el-icon-reading', value: res.totalBooks || 0, label: '图书总数', type: 'primary', trend: 12 },
+          { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '已借出', type: 'warning', trend: -5 },
+          { icon: 'el-icon-user', value: res.totalUsers || 0, label: '用户总数', type: 'info', trend: 8 },
+          { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', type: 'danger', trend: -20 }
         ]
       } catch (error) {
         console.error('加载统计数据失败:', error)
+        this.stats = [
+          { icon: 'el-icon-reading', value: 0, label: '图书总数', type: 'primary', trend: 0 },
+          { icon: 'el-icon-sold-out', value: 0, label: '已借出', type: 'warning', trend: 0 },
+          { icon: 'el-icon-user', value: 0, label: '用户总数', type: 'info', trend: 0 },
+          { icon: 'el-icon-warning', value: 0, label: '逾期未还', type: 'danger', trend: 0 }
+        ]
       }
     },
     async loadRecentBorrows() {
       try {
-        const res = await getBorrows({ current: 1, size: 4 })
+        const res = await getBorrows({ current: 1, size: 5 })
         this.recentBorrows = (res.data || []).map(item => ({
           bookName: item.bookName,
           userName: item.userName,
@@ -171,23 +210,19 @@ export default {
 
 <style scoped>
 .home-page {
-  animation: fadeIn 0.5s ease;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 欢迎横幅 */
+/* ========== 欢迎横幅 ========== */
 .welcome-banner {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  padding: 30px 40px;
+  border-radius: var(--radius-large);
+  padding: 32px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
   position: relative;
   overflow: hidden;
@@ -196,121 +231,188 @@ export default {
 .welcome-banner::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
+  top: -80px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
 }
 
-.welcome-content h1 {
-  color: #fff;
-  font-size: 32px;
-  font-weight: 600;
-  margin-bottom: 10px;
+.welcome-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: 100px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
 }
 
-.welcome-content p {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-}
-
-.welcome-illustration {
-  font-size: 100px;
-  color: rgba(255, 255, 255, 0.2);
+.welcome-content {
   position: relative;
   z-index: 1;
 }
 
-/* 统计卡片 */
+.welcome-content h1 {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.welcome-content p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-base);
+}
+
+.welcome-illustration {
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-illustration i {
+  font-size: 80px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.banner-decoration {
+  position: absolute;
+  right: 40%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+/* ========== 统计卡片 ========== */
 .stat-row {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .stat-card {
-  border-radius: 12px;
-  border: none;
-  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-light);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--spacing-base);
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-medium);
 }
 
-.stat-card .stat-icon {
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.stat-card--primary::before { background: linear-gradient(180deg, var(--color-primary), #764ba2); }
+.stat-card--warning::before { background: linear-gradient(180deg, #f093fb, #f5576c); }
+.stat-card--info::before { background: linear-gradient(180deg, #4facfe, #00f2fe); }
+.stat-card--danger::before { background: linear-gradient(180deg, var(--color-danger), #ff6b6b); }
+
+.stat-card__icon {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: var(--radius-medium);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   color: #fff;
-  margin-bottom: 16px;
+  margin-right: var(--spacing-base);
+  flex-shrink: 0;
 }
 
-.stat-card-1 .stat-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-card-2 .stat-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.stat-card-3 .stat-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.stat-card-4 .stat-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.stat-card--primary .stat-card__icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.stat-card--warning .stat-card__icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-card--info .stat-card__icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.stat-card--danger .stat-card__icon { background: linear-gradient(135deg, #f5576c 0%, #ff6b6b 100%); }
 
-.stat-info .stat-value {
-  font-size: 32px;
+.stat-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-card__value {
+  font-size: 28px;
   font-weight: 700;
-  color: #303133;
+  color: var(--color-text-primary);
   line-height: 1.2;
 }
 
-.stat-info .stat-label {
-  font-size: 15px;
-  color: #909399;
-  margin-top: 6px;
+.stat-card__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 4px;
 }
 
-.stat-trend {
-  margin-top: 8px;
-  font-size: 12px;
+.stat-card__trend {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  font-size: var(--font-size-xs);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(67, 233, 123, 0.1);
+  color: #2eb872;
 }
 
-.trend-text {
-  color: #909399 !important;
-  margin-left: 4px;
+.stat-card__trend i {
+  font-size: 10px;
 }
 
-/* 卡片头部 */
+/* ========== 内容区域 ========== */
+.content-row {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ========== 卡片头部 ========== */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: var(--spacing-sm) 0;
 }
 
 .card-header span {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
   font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
 }
 
 .card-header i {
-  color: #409EFF;
+  color: var(--color-primary);
+  font-size: 16px;
 }
 
-/* 公告列表 */
+/* ========== 公告列表 ========== */
 .notice-list {
-  padding: 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .notice-item {
   display: flex;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.3s;
+  align-items: flex-start;
+  padding: var(--spacing-base) 0;
+  border-bottom: 1px solid #f5f5f5;
+  transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .notice-item:last-child {
@@ -318,90 +420,104 @@ export default {
 }
 
 .notice-item:hover {
-  padding-left: 8px;
+  padding-left: var(--spacing-sm);
 }
 
-.notice-icon {
+.notice-item--highlight {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  margin: 0 calc(var(--spacing-sm) * -1);
+  padding: var(--spacing-base);
+  border-radius: var(--radius-small);
+  border-bottom: none;
+}
+
+.notice-item__icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-small);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  margin-right: 12px;
+  margin-right: var(--spacing-base);
   flex-shrink: 0;
+  font-size: 16px;
 }
 
-.notice-icon-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.notice-icon-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.notice-icon-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.notice-item__icon--1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.notice-item__icon--2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.notice-item__icon--3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
 
-.notice-content {
+.notice-item__content {
   flex: 1;
   min-width: 0;
 }
 
-.notice-title {
-  font-size: 15px;
+.notice-item__title {
+  font-size: var(--font-size-base);
   font-weight: 500;
-  color: #303133;
-  margin-bottom: 6px;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+  line-height: 1.4;
 }
 
-.notice-desc {
-  font-size: 13px;
-  color: #909399;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.notice-item__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
-.notice-date {
-  font-size: 12px;
-  color: #c0c4cc;
-  flex-shrink: 0;
-  margin-left: 12px;
-}
-
-/* 快捷操作 */
-.quick-action-row {
-  margin-top: 20px;
-}
-
+/* ========== 快捷操作 ========== */
 .quick-actions {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-base);
+  padding: var(--spacing-sm) 0;
+}
+
+@media (max-width: 768px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .quick-action-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-medium);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
+  background: #fafbfc;
 }
 
 .quick-action-item:hover {
-  transform: translateY(-5px);
+  background: #f0f2f5;
+  transform: translateY(-4px);
 }
 
-.quick-action-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
+.quick-action-item__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-medium);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   color: #fff;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-normal);
 }
 
-.quick-action-item span {
-  font-size: 15px;
-  color: #606266;
+.quick-action-item:hover .quick-action-item__icon {
+  transform: scale(1.1);
+}
+
+.quick-action-item__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-regular);
+  font-weight: 500;
 }
 </style>
