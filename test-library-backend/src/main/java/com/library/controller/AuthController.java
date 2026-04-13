@@ -89,8 +89,14 @@ public class AuthController {
         userData.put("permissions", permissions);
 
         // 确定主要角色（用于userType和role）
-        String mainRole = roleKeys.isEmpty() ? "reader" : roleKeys.get(0);
-        String userType = "admin".equals(mainRole) || "librarian".equals(mainRole) ? "admin" : "reader";
+        // 角色优先级：admin > librarian > reader
+        String mainRole = "reader";
+        if (roleKeys.contains("admin")) {
+            mainRole = "admin";
+        } else if (roleKeys.contains("librarian")) {
+            mainRole = "librarian";
+        }
+        String userType = "reader".equals(mainRole) ? "reader" : "admin";
 
         // 生成 JWT token
         String token = JwtUtils.generateToken(sysUser.getId(), sysUser.getUsername(), mainRole);

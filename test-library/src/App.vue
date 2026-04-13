@@ -61,6 +61,11 @@
             <i class="el-icon-s-tools"></i>
             <span slot="title">系统设置</span>
           </el-menu-item>
+
+          <el-menu-item index="/announcements" v-if="isAdmin">
+            <i class="el-icon-bell"></i>
+            <span slot="title">公告管理</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -158,7 +163,8 @@ export default {
         '/users': '用户管理',
         '/profile': '个人中心',
         '/settings': '系统设置',
-        '/ai-robot': 'AI 图书助手'
+        '/ai-robot': 'AI 图书助手',
+        '/announcements': '公告管理'
       }
       return routeMap[this.$route.path] || this.$route.name
     }

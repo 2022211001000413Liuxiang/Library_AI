@@ -9,6 +9,7 @@ import Users from '@/components/Users.vue'
 import Profile from '@/components/Profile.vue'
 import Settings from '@/components/Settings.vue'
 import AiRobot from '@/components/AiRobot.vue'
+import Announcements from '@/components/Announcements.vue'
 
 Vue.use(VueRouter)
 
@@ -69,6 +70,12 @@ const routes = [
     name: 'AiRobot',
     component: AiRobot,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/announcements',
+    name: 'Announcements',
+    component: Announcements,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ]
 

@@ -283,11 +283,15 @@ export default {
 .ai-robot-page {
   max-width: 1400px;
   margin: 0 auto;
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ========== 页面标题 ========== */
 .page-header {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-base);
+  flex-shrink: 0;
 }
 
 .page-title {
@@ -315,11 +319,15 @@ export default {
 .ai-container {
   display: flex;
   gap: var(--spacing-lg);
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .ai-sidebar {
   width: 280px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 /* ========== 模式选择卡片 ========== */
@@ -426,19 +434,28 @@ export default {
 .ai-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ========== 聊天卡片 ========== */
 .chat-card {
   border-radius: var(--radius-medium);
-  min-height: 500px;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
-.chat-mode {
-  height: calc(100vh - 220px);
-  max-height: 600px;
+.chat-card >>> .el-card__header {
+  flex-shrink: 0;
+}
+
+.chat-card >>> .el-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .card-header {
@@ -515,6 +532,13 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-base) 0;
+  min-height: 0;
+}
+
+/* ========== 推荐模式内容 ========== */
+.recommend-mode >>> .el-card__body {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .message {

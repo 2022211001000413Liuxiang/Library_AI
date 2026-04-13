@@ -134,6 +134,7 @@
 <script>
 import { getStats } from '@/api/stats'
 import { getBorrows } from '@/api/borrow'
+import { getHomeAnnouncements } from '@/api/announcement'
 
 export default {
   name: 'Home',
@@ -149,11 +150,7 @@ export default {
       }),
       stats: [],
       recentBorrows: [],
-      notices: [
-        { title: '新书上架通知', desc: '本月新增热门图书，欢迎借阅' },
-        { title: '逾期罚款标准调整', desc: '逾期罚款调整为每日0.5元' },
-        { title: '春节期间开放时间', desc: '节日期间营业时间调整为9:00-17:00' }
-      ]
+      notices: []
     }
   },
   computed: {
@@ -165,6 +162,7 @@ export default {
     this.loadUserInfo()
     this.loadStats()
     this.loadRecentBorrows()
+    this.loadNotices()
   },
   methods: {
     loadUserInfo() {
@@ -202,6 +200,17 @@ export default {
         }))
       } catch (error) {
         console.error('加载借阅记录失败:', error)
+      }
+    },
+    async loadNotices() {
+      try {
+        const res = await getHomeAnnouncements(5)
+        this.notices = (res.data || []).map(item => ({
+          title: item.title,
+          desc: item.content ? (item.content.length > 50 ? item.content.substring(0, 50) + '...' : item.content) : ''
+        }))
+      } catch (error) {
+        console.error('加载公告失败:', error)
       }
     }
   }
