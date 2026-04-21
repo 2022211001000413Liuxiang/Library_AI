@@ -143,6 +143,9 @@ export default {
     isReader() {
       return this.userType === 'reader'
     },
+    isStaff() {
+      return this.userType === 'staff'
+    },
     isAdmin() {
       return this.userRole === 'admin'
     },
@@ -208,6 +211,8 @@ export default {
           localStorage.removeItem('userType')
           localStorage.removeItem('userRole')
           localStorage.removeItem('permissions')
+          localStorage.removeItem('ai_session_id')
+          localStorage.removeItem('ai_user_id')
           this.$message.success('退出登录成功')
           this.$router.push('/login')
         } catch (error) {

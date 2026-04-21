@@ -41,6 +41,43 @@
           </div>
         </el-card>
 
+        <!-- 新建对话按钮 -->
+        <el-card shadow="hover" class="new-chat-card">
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            @click="startNewConversation"
+            class="new-chat-btn"
+            size="medium"
+            plain
+          >
+            新建对话
+          </el-button>
+        </el-card>
+
+        <!-- 历史对话 -->
+        <el-card shadow="hover" class="history-card">
+          <div class="history-title">
+            <i class="el-icon-chat-dot-round"></i>
+            历史对话
+          </div>
+          <div class="history-list" v-if="conversationList.length > 0">
+            <div
+              v-for="conv in conversationList"
+              :key="conv.sessionId"
+              class="history-item"
+              :class="{ 'history-item--active': conv.sessionId === sessionId }"
+              @click="switchConversation(conv)"
+            >
+              <div class="history-item__content">
+                <div class="history-item__summary">{{ conv.summary || '新对话' }}</div>
+                <div class="history-item__time">{{ formatTime(conv.createTime) }}</div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="history-empty">暂无历史对话</div>
+        </el-card>
+
         <!-- 快捷问题 -->
         <el-card shadow="hover" class="tips-card" v-if="currentMode === 'chat'">
           <div class="tips-title">
@@ -171,7 +208,7 @@
 </template>
 
 <script>
-import { recommendBooks, chatWithAI } from '@/api/ai'
+import { recommendBooks, chatWithAI, createSession, getHistory, getUserSessions, endSession } from '@/api/ai'
 
 export default {
   name: 'AiRobot',
@@ -194,12 +231,143 @@ export default {
         '推荐几本科幻小说',
         '最近有什么新书上架？',
         '借阅量最高的书有哪些？'
-      ]
+      ],
+      sessionId: null,
+      conversationId: null,
+      conversationList: []
     }
+  },
+  mounted() {
+    this.loadSession()
   },
   methods: {
     getCurrentTime() {
       return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    },
+    async loadSession() {
+      // 获取当前登录用户的真实ID
+      const userInfoStr = localStorage.getItem('userInfo')
+      let currentUserId = 1
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr)
+          currentUserId = userInfo.id || 1
+        } catch (e) {}
+      }
+
+      const savedSessionId = localStorage.getItem('ai_session_id')
+      const savedUserId = localStorage.getItem('ai_user_id')
+
+      // 如果用户变了或没有会话，创建新会话
+      if (!savedSessionId || String(savedUserId) !== String(currentUserId)) {
+        await this.initSession()
+        return
+      }
+
+      this.sessionId = savedSessionId
+      // 加载历史消息
+      try {
+        const res = await getHistory(savedSessionId)
+        if (res.success && res.messages) {
+          this.messages = res.messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            time: m.createTime ? new Date(m.createTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''
+          }))
+          if (this.messages.length === 0) {
+            this.messages.push({
+              role: 'assistant',
+              content: '您好！我是图书馆的 AI 助手。\n\n我可以帮您：\n1. 根据您的阅读偏好推荐图书\n2. 回答关于图书馆藏书的问题\n\n请问有什么可以帮您的？',
+              time: this.getCurrentTime()
+            })
+          }
+        }
+      } catch (error) {
+        console.error('加载历史失败:', error)
+      }
+      // 加载会话列表
+      this.loadConversationList()
+    },
+    async initSession() {
+      // 从localStorage获取真实用户ID
+      const userInfoStr = localStorage.getItem('userInfo')
+      let userId = 1
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr)
+          userId = userInfo.id || 1
+        } catch (e) {}
+      }
+      // 保存AI用户ID（基于真实用户ID）
+      localStorage.setItem('ai_user_id', userId)
+      try {
+        const res = await createSession(userId)
+        if (res.success) {
+          this.sessionId = res.sessionId
+          this.conversationId = res.conversationId
+          localStorage.setItem('ai_session_id', res.sessionId)
+        }
+      } catch (error) {
+        console.error('初始化会话失败:', error)
+      }
+    },
+    async startNewConversation() {
+      this.messages = [
+        {
+          role: 'assistant',
+          content: '您好！我是图书馆的 AI 助手。\n\n我可以帮您：\n1. 根据您的阅读偏好推荐图书\n2. 回答关于图书馆藏书的问题\n\n请问有什么可以帮您的？',
+          time: this.getCurrentTime()
+        }
+      ]
+      localStorage.removeItem('ai_session_id')
+      await this.initSession()
+      this.loadConversationList()
+    },
+    async loadConversationList() {
+      const userInfoStr = localStorage.getItem('userInfo')
+      let userId = 1
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr)
+          userId = userInfo.id || 1
+        } catch (e) {}
+      }
+      try {
+        const res = await getUserSessions(userId)
+        if (res.success) {
+          this.conversationList = res.conversations || []
+        }
+      } catch (error) {
+        console.error('加载会话列表失败:', error)
+      }
+    },
+    async switchConversation(conv) {
+      this.sessionId = conv.sessionId
+      localStorage.setItem('ai_session_id', conv.sessionId)
+      try {
+        const res = await getHistory(conv.sessionId)
+        if (res.success && res.messages) {
+          this.messages = res.messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            time: m.createTime ? new Date(m.createTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''
+          }))
+          if (this.messages.length === 0) {
+            this.messages.push({
+              role: 'assistant',
+              content: '您好！我是图书馆的 AI 助手。\n\n我可以帮您：\n1. 根据您的阅读偏好推荐图书\n2. 回答关于图书馆藏书的问题\n\n请问有什么可以帮您的？',
+              time: this.getCurrentTime()
+            })
+          }
+        }
+      } catch (error) {
+        console.error('加载会话失败:', error)
+      }
+    },
+    formatTime(timeStr) {
+      if (!timeStr) return ''
+      const date = new Date(timeStr)
+      return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     },
     handleModeChange() {
       this.recommendInput = ''
@@ -216,6 +384,17 @@ export default {
         }
       })
     },
+    getUserId() {
+      const userInfoStr = localStorage.getItem('userInfo')
+      let userId = 1
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr)
+          userId = userInfo.id || 1
+        } catch (e) {}
+      }
+      return userId
+    },
     async handleRecommend() {
       if (!this.recommendInput.trim()) {
         this.$message.warning('请输入您的阅读偏好')
@@ -224,7 +403,7 @@ export default {
 
       this.loading = true
       try {
-        const res = await recommendBooks(this.recommendInput)
+        const res = await recommendBooks(this.recommendInput, this.getUserId(), this.sessionId)
         if (res.success) {
           this.recommendResult = res.recommendation
         } else {
@@ -249,7 +428,7 @@ export default {
       this.scrollToBottom()
 
       try {
-        const res = await chatWithAI(question)
+        const res = await chatWithAI(question, this.getUserId(), this.sessionId)
         if (res.success) {
           this.messages.push({ role: 'assistant', content: res.answer, time: this.getCurrentTime() })
         } else {
@@ -268,6 +447,7 @@ export default {
       } finally {
         this.loading = false
         this.scrollToBottom()
+        this.loadConversationList()
       }
     }
   },
@@ -336,6 +516,17 @@ export default {
   margin-bottom: var(--spacing-base);
 }
 
+/* ========== 新建对话按钮 ========== */
+.new-chat-card {
+  border-radius: var(--radius-medium);
+  margin-bottom: var(--spacing-base);
+}
+
+.new-chat-btn {
+  width: 100%;
+  border-radius: var(--radius-small);
+}
+
 .mode-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -386,6 +577,69 @@ export default {
 .mode-item__desc {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+}
+
+/* ========== 历史对话 ========== */
+.history-card {
+  border-radius: var(--radius-medium);
+}
+
+.history-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-base);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-title i {
+  color: var(--color-primary);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.history-item {
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  background: #f5f7fa;
+  transition: all var(--transition-fast);
+}
+
+.history-item:hover {
+  background: #e8ecf1;
+}
+
+.history-item--active {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-left: 3px solid var(--color-primary);
+}
+
+.history-item__summary {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item__time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.history-empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-base);
 }
 
 /* ========== 快捷提示卡片 ========== */

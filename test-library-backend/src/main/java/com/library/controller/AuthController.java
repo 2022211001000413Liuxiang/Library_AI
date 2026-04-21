@@ -96,7 +96,8 @@ public class AuthController {
         } else if (roleKeys.contains("librarian")) {
             mainRole = "librarian";
         }
-        String userType = "reader".equals(mainRole) ? "reader" : "admin";
+        // userType: admin/librarian 表示工作人员，reader 表示读者
+        String userType = "reader".equals(mainRole) ? "reader" : "staff";
 
         // 生成 JWT token
         String token = JwtUtils.generateToken(sysUser.getId(), sysUser.getUsername(), mainRole);

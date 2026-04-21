@@ -49,4 +49,12 @@
         ORDER BY b.create_time DESC
     </select>
 
+    <select id="selectBorrowById" resultMap="BaseResultMap">
+        SELECT b.*, bk.name as bookName, u.name as userName
+        FROM borrow b
+        LEFT JOIN book bk ON b.book_id = bk.id
+        LEFT JOIN sys_user u ON b.user_id = u.id
+        WHERE b.id = #{id}
+    </select>
+
 </mapper>

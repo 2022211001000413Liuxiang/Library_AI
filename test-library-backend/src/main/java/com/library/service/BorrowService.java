@@ -36,7 +36,7 @@ public class BorrowService {
     }
 
     public Borrow getById(Long id) {
-        return borrowMapper.selectById(id);
+        return borrowMapper.selectBorrowById(id);
     }
 
     @Transactional
@@ -67,7 +67,7 @@ public class BorrowService {
 
     @Transactional
     public boolean returnBook(Long id) {
-        Borrow borrow = borrowMapper.selectById(id);
+        Borrow borrow = borrowMapper.selectBorrowById(id);
         if (borrow == null || borrow.getStatus() == 1) {
             return false;
         }
