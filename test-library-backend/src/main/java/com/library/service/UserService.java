@@ -3,23 +3,31 @@ package com.library.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.library.entity.User;
-import com.library.mapper.UserMapper;
+import com.library.entity.SysUser;
+import com.library.mapper.SysUserMapper;
+import com.library.mapper.SysUserRoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
 
     @Autowired
-    private UserMapper userMapper;
+    private SysUserMapper sysUserMapper;
 
-    public IPage<User> getUsers(int current, int size, String name, String username) {
-        Page<User> page = new Page<>(current, size);
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
+    @Autowired
+    private SysUserRoleMapper sysUserRoleMapper;
+
+    public IPage<SysUser> getUsers(int current, int size, String name, String username) {
+        Page<SysUser> page = new Page<>(current, size);
+        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
         if (StringUtils.hasText(name)) {
             wrapper.like("name", name);
         }
@@ -27,30 +35,87 @@ public class UserService {
             wrapper.like("username", username);
         }
         wrapper.orderByDesc("create_time");
-        return userMapper.selectPage(page, wrapper);
+        IPage<SysUser> result = sysUserMapper.selectPage(page, wrapper);
+
+        // 补充角色信息
+        for (SysUser user : result.getRecords()) {
+            List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(user.getId());
+            user.setRole(getRoleKeyById(roleIds));
+        }
+
+        return result;
     }
 
-    public User getById(Long id) {
-        return userMapper.selectById(id);
+    public SysUser getById(Long id) {
+        SysUser user = sysUserMapper.selectById(id);
+        if (user != null) {
+            List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(id);
+            user.setRole(getRoleKeyById(roleIds));
+        }
+        return user;
     }
 
-    public boolean save(User user) {
+    @Transactional
+    public boolean save(SysUser user) {
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
         user.setStatus(0);
-        return userMapper.insert(user) > 0;
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            user.setPassword("123456");
+        }
+        sysUserMapper.insert(user);
+
+        // 分配角色
+        Long roleId = getRoleIdByRoleKey(user.getRole());
+        if (roleId != null) {
+            sysUserRoleMapper.insertUserRole(user.getId(), roleId);
+        }
+
+        return true;
     }
 
-    public boolean update(User user) {
+    @Transactional
+    public boolean update(SysUser user) {
         user.setUpdateTime(LocalDateTime.now());
-        return userMapper.updateById(user) > 0;
+        sysUserMapper.updateById(user);
+
+        // 更新用户角色关联
+        if (user.getRole() != null) {
+            Long roleId = getRoleIdByRoleKey(user.getRole());
+            if (roleId != null) {
+                sysUserRoleMapper.deleteRoleIdsByUserId(user.getId());
+                sysUserRoleMapper.insertUserRole(user.getId(), roleId);
+            }
+        }
+
+        return true;
     }
 
+    @Transactional
     public boolean delete(Long id) {
-        return userMapper.deleteById(id) > 0;
+        sysUserRoleMapper.deleteRoleIdsByUserId(id);
+        sysUserMapper.deleteById(id);
+        return true;
+    }
+
+    private Long getRoleIdByRoleKey(String roleKey) {
+        if (roleKey == null) return 3L;
+        switch (roleKey) {
+            case "admin": return 1L;
+            case "librarian": return 2L;
+            case "reader": return 3L;
+            default: return 3L;
+        }
+    }
+
+    private String getRoleKeyById(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) return "reader";
+        if (roleIds.contains(1L)) return "admin";
+        if (roleIds.contains(2L)) return "librarian";
+        return "reader";
     }
 
     public Long getTotalCount() {
-        return userMapper.selectCount(null);
+        return sysUserMapper.selectCount(null);
     }
 }

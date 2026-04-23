@@ -137,6 +137,13 @@
             inactive-text="禁用"
           ></el-switch>
         </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%;">
+            <el-option label="读者" value="reader"></el-option>
+            <el-option label="图书管理员" value="librarian"></el-option>
+            <el-option label="系统管理员" value="admin"></el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false" icon="el-icon-close">取 消</el-button>
@@ -174,7 +181,8 @@ export default {
         gender: 0,
         phone: '',
         email: '',
-        status: 0
+        status: 0,
+        role: 'reader'
       },
       rules: {
         username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -217,7 +225,7 @@ export default {
     },
     handleAdd() {
       this.dialogTitle = '添加用户'
-      this.form = { id: null, username: '', name: '', gender: 0, phone: '', email: '', status: 0 }
+      this.form = { id: null, username: '', name: '', gender: 0, phone: '', email: '', status: 0, role: 'reader' }
       this.dialogVisible = true
     },
     handleEdit(row) {

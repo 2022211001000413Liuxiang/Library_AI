@@ -1,5 +1,6 @@
 package com.library.mapper;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -20,4 +21,10 @@ public interface SysUserRoleMapper {
      */
     @Insert("INSERT INTO sys_user_role (user_id, role_id) VALUES (#{userId}, #{roleId})")
     int insertUserRole(Long userId, Long roleId);
+
+    /**
+     * 删除用户所有角色关联
+     */
+    @Delete("DELETE FROM sys_user_role WHERE user_id = #{userId}")
+    void deleteRoleIdsByUserId(Long userId);
 }

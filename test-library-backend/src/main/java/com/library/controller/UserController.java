@@ -2,7 +2,6 @@ package com.library.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.library.entity.SysUser;
-import com.library.entity.User;
 import com.library.mapper.SysUserMapper;
 import com.library.service.UserService;
 import com.library.utils.OssUtils;
@@ -33,7 +32,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String username) {
-        IPage<User> page = userService.getUsers(current, size, name, username);
+        IPage<SysUser> page = userService.getUsers(current, size, name, username);
         Map<String, Object> result = new HashMap<>();
         result.put("data", page.getRecords());
         result.put("total", page.getTotal());
@@ -51,14 +50,14 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public Map<String, Object> save(@RequestBody User user) {
+    public Map<String, Object> save(@RequestBody SysUser user) {
         Map<String, Object> result = new HashMap<>();
         result.put("success", userService.save(user));
         return result;
     }
 
     @PutMapping("/users/{id}")
-    public Map<String, Object> update(@PathVariable Long id, @RequestBody User user) {
+    public Map<String, Object> update(@PathVariable Long id, @RequestBody SysUser user) {
         user.setId(id);
         Map<String, Object> result = new HashMap<>();
         result.put("success", userService.update(user));
@@ -80,13 +79,11 @@ public class UserController {
     @GetMapping("/profile")
     public Map<String, Object> getProfile(@RequestParam(required = false) Long userId) {
         Map<String, Object> result = new HashMap<>();
-        // 如果没有传userId，从sys_user表查询（默认查第一个用户，用于兼容旧版）
         if (userId == null) {
             userId = 1L;
         }
         SysUser user = sysUserMapper.selectById(userId);
         if (user != null) {
-            // 不返回密码
             user.setPassword(null);
             result.put("data", user);
         } else {
@@ -129,7 +126,6 @@ public class UserController {
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
 
-        // 实际项目中应验证旧密码，这里简化处理
         if (oldPassword == null || oldPassword.isEmpty()) {
             result.put("success", false);
             result.put("message", "请输入当前密码");
@@ -142,7 +138,6 @@ public class UserController {
             return result;
         }
 
-        // 模拟修改密码成功
         result.put("success", true);
         result.put("message", "密码修改成功");
         return result;
@@ -161,7 +156,6 @@ public class UserController {
         }
 
         try {
-            // 上传到 OSS
             String avatarUrl = ossUtils.uploadFile(file, "avatars");
             result.put("success", true);
             result.put("url", avatarUrl);

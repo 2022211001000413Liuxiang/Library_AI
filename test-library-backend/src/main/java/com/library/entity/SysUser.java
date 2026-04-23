@@ -1,6 +1,7 @@
 package com.library.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -20,6 +21,8 @@ public class SysUser {
     private String phone;
     private String email;
     private String avatar;
+    @TableField(exist = false)
+    private String role;
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
