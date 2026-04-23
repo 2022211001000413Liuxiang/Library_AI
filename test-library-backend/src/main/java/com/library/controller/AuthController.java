@@ -119,4 +119,56 @@ public class AuthController {
         result.put("message", "退出成功");
         return result;
     }
+
+    @PostMapping("/register")
+    public Map<String, Object> register(@RequestBody Map<String, Object> params) {
+        Map<String, Object> result = new HashMap<>();
+        String username = (String) params.get("username");
+        String password = (String) params.get("password");
+        String name = (String) params.get("name");
+        Integer gender = params.get("gender") != null ? Integer.valueOf(params.get("gender").toString()) : 0;
+        String phone = (String) params.get("phone");
+        String email = (String) params.get("email");
+
+        if (username == null || username.trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "用户名不能为空");
+            return result;
+        }
+        if (password == null || password.trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "密码不能为空");
+            return result;
+        }
+
+        // 检查用户名是否已存在
+        QueryWrapper<SysUser> checkWrapper = new QueryWrapper<>();
+        checkWrapper.eq("username", username);
+        SysUser existingUser = sysUserMapper.selectOne(checkWrapper);
+        if (existingUser != null) {
+            result.put("success", false);
+            result.put("message", "用户名已存在");
+            return result;
+        }
+
+        // 创建用户
+        SysUser newUser = new SysUser();
+        newUser.setUsername(username);
+        newUser.setPassword(password);
+        newUser.setName(name);
+        newUser.setGender(gender);
+        newUser.setPhone(phone);
+        newUser.setEmail(email);
+        newUser.setStatus(0);
+        newUser.setCreateTime(java.time.LocalDateTime.now());
+        newUser.setUpdateTime(java.time.LocalDateTime.now());
+        sysUserMapper.insert(newUser);
+
+        // 分配默认角色 reader (role_id = 3)
+        sysUserRoleMapper.insertUserRole(newUser.getId(), 3L);
+
+        result.put("success", true);
+        result.put("message", "注册成功");
+        return result;
+    }
 }

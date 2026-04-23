@@ -45,7 +45,10 @@ service.interceptors.response.use(
         localStorage.removeItem('userRole')
         localStorage.removeItem('permissions')
         Message.error('登录已过期，请重新登录')
-        router.push('/login')
+        // 避免重复导航到当前路由
+        if (router.currentRoute.path !== '/login') {
+          router.push('/login')
+        }
       } else {
         Message.error(error.response.data?.message || '网络错误')
       }

@@ -16,3 +16,12 @@ export function logout() {
     method: 'post'
   })
 }
+
+// 注册
+export function register(data) {
+  return request({
+    url: '/auth/register',
+    method: 'post',
+    data
+  })
+}

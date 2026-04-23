@@ -38,11 +38,13 @@
       <div class="form-section">
         <div class="login-box">
           <div class="login-header">
-            <h2>欢迎回来</h2>
-            <p>请登录您的账户</p>
+            <h2>{{ isRegister ? '注册账户' : '欢迎回来' }}</h2>
+            <p>{{ isRegister ? '请填写注册信息' : '请登录您的账户' }}</p>
           </div>
 
+          <!-- 登录表单 -->
           <el-form
+            v-if="!isRegister"
             :model="loginForm"
             :rules="rules"
             ref="loginForm"
@@ -101,7 +103,109 @@
             </el-form-item>
           </el-form>
 
-          <div class="login-tip">
+          <!-- 注册表单 -->
+          <el-form
+            v-else
+            :model="registerForm"
+            :rules="registerRules"
+            ref="registerForm"
+            class="login-form"
+            @submit.native.prevent
+          >
+            <el-form-item prop="username">
+              <el-input
+                v-model="registerForm.username"
+                placeholder="请输入用户名"
+                prefix-icon="el-icon-user"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item prop="password">
+              <el-input
+                v-model="registerForm.password"
+                type="password"
+                placeholder="请输入密码"
+                prefix-icon="el-icon-lock"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item prop="confirmPassword">
+              <el-input
+                v-model="registerForm.confirmPassword"
+                type="password"
+                placeholder="请确认密码"
+                prefix-icon="el-icon-lock"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item prop="name">
+              <el-input
+                v-model="registerForm.name"
+                placeholder="请输入姓名"
+                prefix-icon="el-icon-user"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item prop="gender">
+              <el-radio-group v-model="registerForm.gender" class="gender-group">
+                <el-radio :label="0"><i class="el-icon-male"></i> 男</el-radio>
+                <el-radio :label="1"><i class="el-icon-female"></i> 女</el-radio>
+              </el-radio-group>
+            </el-form-item>
+
+            <el-form-item prop="phone">
+              <el-input
+                v-model="registerForm.phone"
+                placeholder="请输入手机号（选填）"
+                prefix-icon="el-icon-phone"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item prop="email">
+              <el-input
+                v-model="registerForm.email"
+                placeholder="请输入邮箱（选填）"
+                prefix-icon="el-icon-message"
+                clearable
+                size="medium"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button
+                type="primary"
+                :loading="loading"
+                class="login-button"
+                size="medium"
+                @click="handleRegister"
+              >
+                {{ loading ? '注册中...' : '注 册' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <div class="login-footer">
+            <span v-if="!isRegister">
+              还没有账户？
+              <a href="javascript:void(0)" @click="switchToRegister" class="link">立即注册</a>
+            </span>
+            <span v-else>
+              已有账户？
+              <a href="javascript:void(0)" @click="switchToLogin" class="link">立即登录</a>
+            </span>
+          </div>
+
+          <div class="login-tip" v-if="!isRegister">
             <i class="el-icon-info"></i>
             <span>默认账号：admin / 123456</span>
           </div>
@@ -112,20 +216,46 @@
 </template>
 
 <script>
-import { login } from '@/api/auth'
+import { login, register } from '@/api/auth'
 
 export default {
   name: 'Login',
   data() {
+    const validatePass2 = (rule, value, callback) => {
+      if (value !== this.registerForm.password) {
+        callback(new Error('两次输入密码不一致'))
+      } else {
+        callback()
+      }
+    }
     return {
+      isRegister: false,
       loginForm: {
         username: '',
         password: '',
         userType: 'admin'
       },
+      registerForm: {
+        username: '',
+        password: '',
+        confirmPassword: '',
+        name: '',
+        gender: 0,
+        phone: '',
+        email: ''
+      },
       rules: {
         username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+      },
+      registerRules: {
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        confirmPassword: [
+          { required: true, message: '请确认密码', trigger: 'blur' },
+          { validator: validatePass2, trigger: 'blur' }
+        ],
+        name: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
       },
       loading: false
     }
@@ -156,6 +286,42 @@ export default {
           }
         }
       })
+    },
+    handleRegister() {
+      this.$refs.registerForm.validate(async valid => {
+        if (valid) {
+          this.loading = true
+          try {
+            const res = await register(this.registerForm)
+            if (res.success) {
+              this.$message.success('注册成功，请登录')
+              this.isRegister = false
+              this.loginForm.username = this.registerForm.username
+              this.registerForm = {
+                username: '',
+                password: '',
+                confirmPassword: '',
+                name: '',
+                gender: 0,
+                phone: '',
+                email: ''
+              }
+            } else {
+              this.$message.error(res.message || '注册失败')
+            }
+          } catch (error) {
+            this.$message.error('注册失败，请检查网络')
+          } finally {
+            this.loading = false
+          }
+        }
+      })
+    },
+    switchToRegister() {
+      this.isRegister = true
+    },
+    switchToLogin() {
+      this.isRegister = false
     }
   }
 }
@@ -470,6 +636,34 @@ export default {
 
 .login-tip i {
   color: var(--color-info);
+}
+
+/* 登录底部链接 */
+.login-footer {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.login-footer .link {
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.login-footer .link:hover {
+  text-decoration: underline;
+}
+
+/* 性别选择 */
+.gender-group {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.gender-group >>> .el-radio {
+  margin-right: 0;
 }
 
 /* 响应式 */
