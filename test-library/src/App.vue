@@ -57,11 +57,6 @@
             <span slot="title">个人中心</span>
           </el-menu-item>
 
-          <el-menu-item index="/settings" v-if="hasPermission('settings:manage')">
-            <i class="el-icon-s-tools"></i>
-            <span slot="title">系统设置</span>
-          </el-menu-item>
-
           <el-menu-item index="/announcements" v-if="isAdmin">
             <i class="el-icon-bell"></i>
             <span slot="title">公告管理</span>
@@ -98,9 +93,6 @@
               <el-dropdown-menu slot="dropdown" class="user-dropdown-menu">
                 <el-dropdown-item command="profile">
                   <i class="el-icon-user"></i> 个人中心
-                </el-dropdown-item>
-                <el-dropdown-item command="settings" v-if="hasPermission('settings:manage')">
-                  <i class="el-icon-setting"></i> 系统设置
                 </el-dropdown-item>
                 <el-dropdown-item divided command="logout">
                   <i class="el-icon-switch-button"></i> 退出登录
@@ -165,7 +157,6 @@ export default {
         '/my-borrow': '我的借阅',
         '/users': '用户管理',
         '/profile': '个人中心',
-        '/settings': '系统设置',
         '/ai-robot': 'AI 图书助手',
         '/announcements': '公告管理'
       }
@@ -196,8 +187,6 @@ export default {
     async handleUserCommand(command) {
       if (command === 'profile') {
         this.$router.push('/profile')
-      } else if (command === 'settings') {
-        this.$router.push('/settings')
       } else if (command === 'logout') {
         try {
           await this.$confirm('确定要退出登录吗？', '提示', {

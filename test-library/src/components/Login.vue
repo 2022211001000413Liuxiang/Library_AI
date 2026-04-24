@@ -207,7 +207,7 @@
 
           <div class="login-tip" v-if="!isRegister">
             <i class="el-icon-info"></i>
-            <span>默认账号：admin / 123456</span>
+            <span></span>
           </div>
         </div>
       </div>

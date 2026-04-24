@@ -7,7 +7,6 @@ import Borrow from '@/components/Borrow.vue'
 import ReaderBorrow from '@/components/ReaderBorrow.vue'
 import Users from '@/components/Users.vue'
 import Profile from '@/components/Profile.vue'
-import Settings from '@/components/Settings.vue'
 import AiRobot from '@/components/AiRobot.vue'
 import Announcements from '@/components/Announcements.vue'
 
@@ -58,12 +57,6 @@ const routes = [
     name: 'Profile',
     component: Profile,
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: Settings,
-    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/ai-robot',
