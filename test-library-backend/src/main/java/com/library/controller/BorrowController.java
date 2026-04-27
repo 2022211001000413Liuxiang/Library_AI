@@ -31,6 +31,13 @@ public class BorrowController {
         result.put("current", page.getCurrent());
         result.put("size", page.getSize());
         result.put("pages", page.getPages());
+        // 返回统计数据（包含总数）
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", page.getTotal());
+        stats.put("borrowing", borrowService.getBorrowingCount());
+        stats.put("returned", borrowService.getReturnedCount());
+        stats.put("overdue", borrowService.getOverdueCount());
+        result.put("stats", stats);
         return result;
     }
 
@@ -71,6 +78,13 @@ public class BorrowController {
         result.put("current", page.getCurrent());
         result.put("size", page.getSize());
         result.put("pages", page.getPages());
+        // 返回统计数据（包含总数）
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", page.getTotal());
+        stats.put("borrowing", borrowService.getBorrowingCountByUserId(userId));
+        stats.put("returned", borrowService.getReturnedCountByUserId(userId));
+        stats.put("overdue", borrowService.getOverdueCountByUserId(userId));
+        result.put("stats", stats);
         return result;
     }
 }

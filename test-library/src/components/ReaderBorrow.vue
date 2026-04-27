@@ -269,11 +269,12 @@ export default {
         this.tableData = res.data || []
         this.pagination.total = res.total || 0
 
-        // 计算统计数据
-        const allData = res.data || []
-        this.stats.borrowing = allData.filter(item => item.status === 0).length
-        this.stats.returned = allData.filter(item => item.status === 1).length
-        this.stats.overdue = allData.filter(item => item.status === 2).length
+        // 使用后端返回的统计数据
+        if (res.stats) {
+          this.stats.borrowing = res.stats.borrowing || 0
+          this.stats.returned = res.stats.returned || 0
+          this.stats.overdue = res.stats.overdue || 0
+        }
       } catch (error) {
         console.error('加载借阅记录失败:', error)
       } finally {

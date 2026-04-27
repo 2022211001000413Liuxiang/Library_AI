@@ -17,7 +17,7 @@
     </resultMap>
 
     <select id="selectBorrowPage" resultMap="BaseResultMap">
-        SELECT b.*, bk.name as bookName, u.name as userName
+        SELECT b.*, bk.name as bookName, u.name as userName, u.avatar as userAvatar
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
         LEFT JOIN sys_user u ON b.user_id = u.id
