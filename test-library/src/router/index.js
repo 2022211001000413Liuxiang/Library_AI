@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '@/components/Login.vue'
+import Layout from '@/components/Layout.vue'
 import Home from '@/components/Home.vue'
 import Books from '@/components/Books.vue'
 import Borrow from '@/components/Borrow.vue'
@@ -23,52 +24,57 @@ const routes = [
     component: Login
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: Home,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/books',
-    name: 'Books',
-    component: Books,
-    meta: { requiresAuth: true, requiresLibrarian: true }
-  },
-  {
-    path: '/borrow',
-    name: 'Borrow',
-    component: Borrow,
-    meta: { requiresAuth: true, requiresLibrarian: true }
-  },
-  {
-    path: '/my-borrow',
-    name: 'MyBorrow',
-    component: ReaderBorrow,
-    meta: { requiresAuth: true, requiresReader: true }
-  },
-  {
-    path: '/users',
-    name: 'Users',
-    component: Users,
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/ai-robot',
-    name: 'AiRobot',
-    component: AiRobot,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/announcements',
-    name: 'Announcements',
-    component: Announcements,
-    meta: { requiresAuth: true, requiresAdmin: true }
+    path: '/',
+    component: Layout,
+    redirect: '/home',
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'home',
+        name: 'Home',
+        component: Home
+      },
+      {
+        path: 'books',
+        name: 'Books',
+        component: Books,
+        meta: { requiresLibrarian: true }
+      },
+      {
+        path: 'borrow',
+        name: 'Borrow',
+        component: Borrow,
+        meta: { requiresLibrarian: true }
+      },
+      {
+        path: 'my-borrow',
+        name: 'MyBorrow',
+        component: ReaderBorrow,
+        meta: { requiresReader: true }
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: Users,
+        meta: { requiresAdmin: true }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: Profile
+      },
+      {
+        path: 'ai-robot',
+        name: 'AiRobot',
+        component: AiRobot
+      },
+      {
+        path: 'announcements',
+        name: 'Announcements',
+        component: Announcements,
+        meta: { requiresAdmin: true }
+      }
+    ]
   }
 ]
 
@@ -81,7 +87,6 @@ const router = new VueRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const userInfo = localStorage.getItem('userInfo')
-  const userType = localStorage.getItem('userType')
   const userRole = localStorage.getItem('userRole')
 
   // 访问根路径重定向到登录页
@@ -90,27 +95,31 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  if (to.meta.requiresAuth) {
-    if (!userInfo) {
-      // 未登录，跳转到登录页
-      next('/login')
-    } else if (to.meta.requiresAdmin && userRole !== 'admin') {
-      // 需要系统管理员权限
-      Vue.prototype.$message.warning('您没有权限访问该页面')
-      next('/home')
-    } else if (to.meta.requiresLibrarian && userRole !== 'admin' && userRole !== 'librarian') {
-      // 需要图书管理员权限
-      Vue.prototype.$message.warning('您没有权限访问该页面')
-      next('/home')
-    } else if (to.meta.requiresReader && userRole !== 'reader') {
-      // 需要读者权限
-      Vue.prototype.$message.warning('您没有权限访问该页面')
+  // 登录页直接放行
+  if (to.path === '/login') {
+    if (userInfo) {
       next('/home')
     } else {
       next()
     }
-  } else if (to.path === '/login' && userInfo) {
-    // 已登录访问登录页，跳转到首页
+    return
+  }
+
+  // 其他页面需要登录
+  if (to.meta.requiresAuth && !userInfo) {
+    next('/login')
+    return
+  }
+
+  // 权限检查
+  if (to.meta.requiresAdmin && userRole !== 'admin') {
+    Vue.prototype.$message.warning('您没有权限访问该页面')
+    next('/home')
+  } else if (to.meta.requiresLibrarian && userRole !== 'admin' && userRole !== 'librarian') {
+    Vue.prototype.$message.warning('您没有权限访问该页面')
+    next('/home')
+  } else if (to.meta.requiresReader && userRole !== 'reader') {
+    Vue.prototype.$message.warning('您没有权限访问该页面')
     next('/home')
   } else {
     next()

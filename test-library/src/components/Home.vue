@@ -101,25 +101,25 @@
           </div>
           <div class="quick-actions">
             <div class="quick-action-item" @click="$router.push('/books')">
-              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <div class="quick-action-item__icon">
                 <i class="el-icon-reading"></i>
               </div>
               <span class="quick-action-item__label">图书管理</span>
             </div>
             <div class="quick-action-item" @click="$router.push(isReader ? '/my-borrow' : '/borrow')">
-              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <div class="quick-action-item__icon">
                 <i class="el-icon-sold-out"></i>
               </div>
               <span class="quick-action-item__label">{{ isReader ? '我的借阅' : '借阅管理' }}</span>
             </div>
             <div class="quick-action-item" @click="$router.push('/ai-robot')">
-              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <div class="quick-action-item__icon">
                 <i class="el-icon-microphone"></i>
               </div>
               <span class="quick-action-item__label">AI 助手</span>
             </div>
             <div class="quick-action-item" @click="$router.push('/profile')">
-              <div class="quick-action-item__icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+              <div class="quick-action-item__icon">
                 <i class="el-icon-user"></i>
               </div>
               <span class="quick-action-item__label">个人中心</span>
@@ -519,6 +519,11 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all var(--transition-normal);
 }
+
+.quick-action-item:nth-child(1) .quick-action-item__icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.quick-action-item:nth-child(2) .quick-action-item__icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.quick-action-item:nth-child(3) .quick-action-item__icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.quick-action-item:nth-child(4) .quick-action-item__icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
 
 .quick-action-item:hover .quick-action-item__icon {
   transform: scale(1.1);

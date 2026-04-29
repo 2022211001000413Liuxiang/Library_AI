@@ -1,34 +1,47 @@
 <template>
   <div class="login-page">
-    <!-- 背景装饰 -->
-    <div class="bg-decoration">
-      <div class="circle circle-1"></div>
-      <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
+    <!-- 背景图片 -->
+    <div class="login-bg">
+      <div class="bg-overlay"></div>
     </div>
 
     <div class="login-container">
       <!-- 左侧品牌区域 -->
       <div class="brand-section">
         <div class="brand-content">
-          <div class="brand-icon">
+          <div class="brand-logo">
             <i class="el-icon-collection"></i>
           </div>
           <h1 class="brand-title">图书馆管理系统</h1>
-          <p class="brand-desc">智能、高效、便捷的图书馆管理解决方案</p>
+          <p class="brand-subtitle">智能 · 高效 · 便捷</p>
 
-          <div class="feature-list">
+          <div class="brand-features">
             <div class="feature-item">
-              <i class="el-icon-reading"></i>
-              <span>图书管理</span>
+              <div class="feature-icon">
+                <i class="el-icon-reading"></i>
+              </div>
+              <div class="feature-text">
+                <h4>图书管理</h4>
+                <p>海量藏书·智能分类</p>
+              </div>
             </div>
             <div class="feature-item">
-              <i class="el-icon-s-order"></i>
-              <span>借阅管理</span>
+              <div class="feature-icon">
+                <i class="el-icon-s-order"></i>
+              </div>
+              <div class="feature-text">
+                <h4>借阅管理</h4>
+                <p>便捷借还·逾期提醒</p>
+              </div>
             </div>
             <div class="feature-item">
-              <i class="el-icon-microphone"></i>
-              <span>AI智能助手</span>
+              <div class="feature-icon">
+                <i class="el-icon-microphone"></i>
+              </div>
+              <div class="feature-text">
+                <h4>AI 助手</h4>
+                <p>智能推荐·语音交互</p>
+              </div>
             </div>
           </div>
         </div>
@@ -39,7 +52,7 @@
         <div class="login-box">
           <div class="login-header">
             <h2>{{ isRegister ? '注册账户' : '欢迎回来' }}</h2>
-            <p>{{ isRegister ? '请填写注册信息' : '请登录您的账户' }}</p>
+            <p>{{ isRegister ? '创建您的账户开始使用' : '请登录您的账户' }}</p>
           </div>
 
           <!-- 登录表单 -->
@@ -78,10 +91,10 @@
                 <div class="role-label">选择身份</div>
                 <el-radio-group v-model="loginForm.userType" class="role-group">
                   <el-radio-button label="admin">
-                    <i class="el-icon-s-tools"></i> 系统管理员
+                    <i class="el-icon-s-tools"></i> 管理员
                   </el-radio-button>
                   <el-radio-button label="librarian">
-                    <i class="el-icon-reading"></i> 图书管理员
+                    <i class="el-icon-reading"></i> 馆员
                   </el-radio-button>
                   <el-radio-button label="reader">
                     <i class="el-icon-user"></i> 读者
@@ -148,7 +161,7 @@
               <el-input
                 v-model="registerForm.name"
                 placeholder="请输入姓名"
-                prefix-icon="el-icon-user"
+                prefix-icon="el-icon-postcard"
                 clearable
                 size="medium"
               ></el-input>
@@ -207,7 +220,7 @@
 
           <div class="login-tip" v-if="!isRegister">
             <i class="el-icon-info"></i>
-            <span></span>
+            <span>默认账号：admin / 123456</span>
           </div>
         </div>
       </div>
@@ -330,74 +343,41 @@ export default {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* 背景装饰圆形 */
-.bg-decoration {
+/* ========== 背景图片 ========== */
+.login-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* TODO: 替换为您的实际图片路径，如：background: url('/assets/images/your-image.jpg'); */
+  background: url('@/assets/images/VCG41N1480242907.webp') no-repeat center center;
+  background-size: cover;
+}
+
+.bg-overlay {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
 }
 
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 20s infinite ease-in-out;
-}
-
-.circle-1 {
-  width: 400px;
-  height: 400px;
-  top: -100px;
-  right: -100px;
-  animation-delay: 0s;
-}
-
-.circle-2 {
-  width: 300px;
-  height: 300px;
-  bottom: -50px;
-  left: -50px;
-  animation-delay: -5s;
-}
-
-.circle-3 {
-  width: 200px;
-  height: 200px;
-  top: 50%;
-  left: 30%;
-  animation-delay: -10s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(20px, -20px) scale(1.05);
-  }
-  50% {
-    transform: translate(0, -40px) scale(1);
-  }
-  75% {
-    transform: translate(-20px, -20px) scale(0.95);
-  }
-}
-
-/* 主容器 */
+/* ========== 主容器 ========== */
 .login-container {
-  display: flex;
-  min-height: 100vh;
   position: relative;
   z-index: 1;
+  display: flex;
+  min-height: 100vh;
 }
 
-/* 左侧品牌区域 */
+/* ========== 左侧品牌区域 ========== */
 .brand-section {
   flex: 1;
   display: flex;
@@ -409,9 +389,10 @@ export default {
 .brand-content {
   max-width: 480px;
   color: #fff;
+  text-align: center;
 }
 
-.brand-icon {
+.brand-logo {
   width: 100px;
   height: 100px;
   background: rgba(255, 255, 255, 0.2);
@@ -419,69 +400,86 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--spacing-xl);
+  margin: 0 auto var(--spacing-xl);
   backdrop-filter: blur(10px);
   animation: pulse 3s infinite ease-in-out;
 }
 
-.brand-icon i {
+.brand-logo i {
   font-size: 48px;
   color: #fff;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.2);
-  }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.2); }
 }
 
 .brand-title {
-  font-size: 42px;
+  font-size: 36px;
   font-weight: 700;
-  margin-bottom: var(--spacing-base);
-  line-height: 1.2;
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.brand-desc {
+.brand-subtitle {
   font-size: var(--font-size-lg);
   opacity: 0.9;
   margin-bottom: var(--spacing-xl);
-  line-height: 1.6;
+  letter-spacing: 8px;
 }
 
-.feature-list {
+.brand-features {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-base);
+  margin-bottom: var(--spacing-xl);
+  text-align: left;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-base);
-  opacity: 0.9;
+  gap: var(--spacing-base);
+  padding: var(--spacing-base);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-medium);
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-normal);
 }
 
-.feature-item i {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(8px);
+}
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
-/* 右侧表单区域 */
+.feature-text h4 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.feature-text p {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* ========== 右侧表单区域 ========== */
 .form-section {
-  width: 480px;
+  width: 520px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -490,23 +488,18 @@ export default {
 
 .login-box {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   padding: var(--spacing-xl);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: var(--radius-large);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
   animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .login-header {
@@ -541,7 +534,7 @@ export default {
 
 .login-form >>> .el-input__inner:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.1);
 }
 
 .login-form >>> .el-input__prefix {
@@ -587,8 +580,8 @@ export default {
 }
 
 .role-group >>> .el-radio-button__orig-radio:checked + .el-radio-button__inner {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%);
-  border-color: var(--color-primary);
+  background: linear-gradient(135deg, #8B5A2B 0%, #D2691E 100%);
+  border-color: #8B5A2B;
 }
 
 .role-group >>> .el-radio-button__inner i {
@@ -602,16 +595,16 @@ export default {
   width: 100%;
   height: 48px;
   font-size: 16px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B5A2B 0%, #D2691E 100%);
   border: none;
   border-radius: var(--radius-small);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(139, 90, 43, 0.4);
   transition: all var(--transition-normal);
 }
 
 .login-button:hover {
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, #6a4190 100%);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, #7A4F26 0%, #C25A1A 100%);
+  box-shadow: 0 6px 20px rgba(139, 90, 43, 0.5);
   transform: translateY(-2px);
 }
 
@@ -647,9 +640,10 @@ export default {
 }
 
 .login-footer .link {
-  color: var(--color-primary);
+  color: #8B5A2B;
   text-decoration: none;
   margin-left: 4px;
+  font-weight: 500;
 }
 
 .login-footer .link:hover {
