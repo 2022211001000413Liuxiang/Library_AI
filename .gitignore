@@ -38,3 +38,6 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Backend config (contains sensitive keys - use .template instead)
+test-library-backend/src/main/resources/application.yml
