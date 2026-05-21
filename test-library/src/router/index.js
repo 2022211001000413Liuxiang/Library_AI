@@ -38,13 +38,13 @@ const routes = [
         path: 'books',
         name: 'Books',
         component: Books,
-        meta: { requiresLibrarian: true }
+        meta: { requiresLibrarianOnly: true }
       },
       {
         path: 'borrow',
         name: 'Borrow',
         component: Borrow,
-        meta: { requiresLibrarian: true }
+        meta: { requiresLibrarianOnly: true }
       },
       {
         path: 'my-borrow',
@@ -116,6 +116,9 @@ router.beforeEach((to, from, next) => {
     Vue.prototype.$message.warning('您没有权限访问该页面')
     next('/home')
   } else if (to.meta.requiresLibrarian && userRole !== 'admin' && userRole !== 'librarian') {
+    Vue.prototype.$message.warning('您没有权限访问该页面')
+    next('/home')
+  } else if (to.meta.requiresLibrarianOnly && userRole !== 'librarian') {
     Vue.prototype.$message.warning('您没有权限访问该页面')
     next('/home')
   } else if (to.meta.requiresReader && userRole !== 'reader') {

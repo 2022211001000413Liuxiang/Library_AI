@@ -32,14 +32,18 @@
             <span slot="title">首页</span>
           </el-menu-item>
 
-          <el-menu-item index="/books" v-if="hasPermission('book:manage')">
+          <el-menu-item index="/books" v-if="isLibrarian">
             <i class="el-icon-reading"></i>
             <span slot="title">图书管理</span>
           </el-menu-item>
 
-          <el-menu-item :index="isReader ? '/my-borrow' : '/borrow'">
+          <el-menu-item v-if="isLibrarian" index="/borrow">
             <i class="el-icon-s-order"></i>
-            <span slot="title">{{ isReader ? '我的借阅' : '借阅管理' }}</span>
+            <span slot="title">借阅管理</span>
+          </el-menu-item>
+          <el-menu-item v-else-if="isReader" index="/my-borrow">
+            <i class="el-icon-s-order"></i>
+            <span slot="title">我的借阅</span>
           </el-menu-item>
 
           <el-menu-item index="/ai-robot">

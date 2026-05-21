@@ -229,7 +229,6 @@ export default {
       quickTips: [
         '有什么关于历史的书推荐吗？',
         '推荐几本科幻小说',
-        '最近有什么新书上架？',
         '借阅量最高的书有哪些？'
       ],
       sessionId: null,

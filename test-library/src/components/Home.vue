@@ -34,7 +34,7 @@
     <!-- 内容区域 -->
     <el-row :gutter="20" class="content-row">
       <!-- 最近借阅 -->
-      <el-col :xs="24" :lg="14">
+      <el-col :xs="24" :lg="14" v-if="!isAdmin">
         <el-card shadow="hover" class="custom-card">
           <div slot="header" class="card-header">
             <span>
@@ -61,7 +61,7 @@
       </el-col>
 
       <!-- 系统公告 -->
-      <el-col :xs="24" :lg="10">
+      <el-col :xs="24" :lg="isAdmin ? 24 : 10">
         <el-card shadow="hover" class="custom-card">
           <div slot="header" class="card-header">
             <span>
@@ -100,13 +100,13 @@
             </span>
           </div>
           <div class="quick-actions">
-            <div class="quick-action-item" @click="$router.push('/books')">
+            <div class="quick-action-item" v-if="!isAdmin" @click="$router.push('/books')">
               <div class="quick-action-item__icon">
                 <i class="el-icon-reading"></i>
               </div>
               <span class="quick-action-item__label">图书管理</span>
             </div>
-            <div class="quick-action-item" @click="$router.push(isReader ? '/my-borrow' : '/borrow')">
+            <div class="quick-action-item" v-if="!isAdmin" @click="$router.push(isReader ? '/my-borrow' : '/borrow')">
               <div class="quick-action-item__icon">
                 <i class="el-icon-sold-out"></i>
               </div>
@@ -142,6 +142,7 @@ export default {
     return {
       userName: '',
       userType: '',
+      userRole: '',
       currentDate: new Date().toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: 'long',
@@ -156,12 +157,17 @@ export default {
   computed: {
     isReader() {
       return this.userType === 'reader'
+    },
+    isAdmin() {
+      return this.userRole === 'admin'
     }
   },
   created() {
     this.loadUserInfo()
     this.loadStats()
-    this.loadRecentBorrows()
+    if (!this.isAdmin) {
+      this.loadRecentBorrows()
+    }
     this.loadNotices()
   },
   methods: {
@@ -169,23 +175,32 @@ export default {
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
       this.userName = userInfo.name || userInfo.username || '管理员'
       this.userType = localStorage.getItem('userType') || ''
+      this.userRole = localStorage.getItem('userRole') || ''
     },
     async loadStats() {
       try {
         const res = await getStats()
         this.stats = [
           { icon: 'el-icon-reading', value: res.totalBooks || 0, label: '图书总数', type: 'primary', trend: 12 },
-          { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '已借出', type: 'warning', trend: -5 },
+          ...(!this.isAdmin ? [
+            { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '已借出', type: 'warning', trend: -5 }
+          ] : []),
           { icon: 'el-icon-user', value: res.totalUsers || 0, label: '用户总数', type: 'info', trend: 8 },
-          { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', type: 'danger', trend: -20 }
+          ...(!this.isAdmin ? [
+            { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', type: 'danger', trend: -20 }
+          ] : [])
         ]
       } catch (error) {
         console.error('加载统计数据失败:', error)
         this.stats = [
           { icon: 'el-icon-reading', value: 0, label: '图书总数', type: 'primary', trend: 0 },
-          { icon: 'el-icon-sold-out', value: 0, label: '已借出', type: 'warning', trend: 0 },
+          ...(!this.isAdmin ? [
+            { icon: 'el-icon-sold-out', value: 0, label: '已借出', type: 'warning', trend: 0 }
+          ] : []),
           { icon: 'el-icon-user', value: 0, label: '用户总数', type: 'info', trend: 0 },
-          { icon: 'el-icon-warning', value: 0, label: '逾期未还', type: 'danger', trend: 0 }
+          ...(!this.isAdmin ? [
+            { icon: 'el-icon-warning', value: 0, label: '逾期未还', type: 'danger', trend: 0 }
+          ] : [])
         ]
       }
     },

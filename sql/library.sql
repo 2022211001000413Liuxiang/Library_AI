@@ -307,10 +307,8 @@ CREATE TABLE `sys_role_permission`  (
 -- Records of sys_role_permission
 -- ----------------------------
 INSERT INTO `sys_role_permission` VALUES (1, 1, 1);
-INSERT INTO `sys_role_permission` VALUES (2, 1, 2);
 INSERT INTO `sys_role_permission` VALUES (3, 1, 3);
 INSERT INTO `sys_role_permission` VALUES (4, 1, 4);
-INSERT INTO `sys_role_permission` VALUES (5, 1, 5);
 INSERT INTO `sys_role_permission` VALUES (6, 1, 6);
 INSERT INTO `sys_role_permission` VALUES (7, 2, 1);
 INSERT INTO `sys_role_permission` VALUES (8, 2, 2);
@@ -319,10 +317,8 @@ INSERT INTO `sys_role_permission` VALUES (10, 2, 6);
 INSERT INTO `sys_role_permission` VALUES (11, 3, 5);
 INSERT INTO `sys_role_permission` VALUES (12, 3, 6);
 INSERT INTO `sys_role_permission` VALUES (13, 1, 1);
-INSERT INTO `sys_role_permission` VALUES (14, 1, 2);
 INSERT INTO `sys_role_permission` VALUES (15, 1, 3);
 INSERT INTO `sys_role_permission` VALUES (16, 1, 4);
-INSERT INTO `sys_role_permission` VALUES (17, 1, 5);
 INSERT INTO `sys_role_permission` VALUES (18, 1, 6);
 INSERT INTO `sys_role_permission` VALUES (19, 2, 1);
 INSERT INTO `sys_role_permission` VALUES (20, 2, 2);

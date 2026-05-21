@@ -56,7 +56,7 @@ public class AuthController {
             return result;
         }
 
-        // 查询用户关联的角色ID列表
+        // 查询用户关联的角色ID列表->可能有多个角色
         List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(sysUser.getId());
 
         // 查询角色信息

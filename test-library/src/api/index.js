@@ -7,7 +7,7 @@ const service = axios.create({
   timeout: 10000
 })
 
-// 请求拦截器
+// 请求拦截器->每次请求前都会执行这个函数
 service.interceptors.request.use(
   config => {
     // 从 localStorage 获取 token
@@ -24,7 +24,7 @@ service.interceptors.request.use(
   }
 )
 
-// 响应拦截器
+// 响应拦截器->每次收到响应后都会执行这个函数
 service.interceptors.response.use(
   response => {
     const res = response.data

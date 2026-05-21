@@ -39,7 +39,8 @@ public class JwtUtils {
     }
 
     /**
-     * 获取密钥
+     * 获取密钥->signWith() 方法需要的是 Key 类型，不能直接传 String。
+     * keyBytes 是一个 42 字节的数组（因为 SECRET 字符串有 42 个字符），每个元素是对应字符的 UTF-8 编码值
      */
     private static Key getKey() {
         byte[] keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
