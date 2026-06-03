@@ -10,6 +10,8 @@ public interface BorrowMapper extends BaseMapper<Borrow> {
 
     IPage<Borrow> selectBorrowPage(Page<Borrow> page, @Param("bookName") String bookName, @Param("userName") String userName, @Param("status") Integer status);
 
+    Long selectBorrowPageCount(@Param("bookName") String bookName, @Param("userName") String userName, @Param("status") Integer status);
+
     IPage<Borrow> selectBorrowPageByUserId(Page<Borrow> page, @Param("userId") Long userId, @Param("status") Integer status);
 
     Borrow selectBorrowById(@Param("id") Long id);

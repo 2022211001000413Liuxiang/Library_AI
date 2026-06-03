@@ -17,14 +17,15 @@ public class AnnouncementController {
 
     @Autowired
     private AnnouncementService announcementService;
-
+//公告页面
     @GetMapping
     public Map<String, Object> getAnnouncements(
             @RequestParam(defaultValue = "1") int current,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) Integer priority) {
-        IPage<Announcement> page = announcementService.getAnnouncements(current, size, title, priority);
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(required = false) Integer status) {
+        IPage<Announcement> page = announcementService.getAnnouncements(current, size, title, priority, status);
         Map<String, Object> result = new HashMap<>();
         result.put("data", page.getRecords());
         result.put("total", page.getTotal());
@@ -33,7 +34,7 @@ public class AnnouncementController {
         result.put("pages", page.getPages());
         return result;
     }
-
+//首页
     @GetMapping("/home")
     public Map<String, Object> getHomeAnnouncements(@RequestParam(defaultValue = "5") int limit) {
         List<Announcement> list = announcementService.getHomeAnnouncements(limit);

@@ -26,10 +26,15 @@ public class BorrowController {
             @RequestParam(required = false) Integer status) {
         IPage<Borrow> page = borrowService.getBorrows(current, size, bookName, userName, status);
         Map<String, Object> result = new HashMap<>();
+        //返回当前页所有记录，mp在执行sql时自动添加limit
         result.put("data", page.getRecords());
+        //返回页总数
         result.put("total", page.getTotal());
+        //获得当前页码
         result.put("current", page.getCurrent());
+        //返回每页记录数
         result.put("size", page.getSize());
+        //返回总页数
         result.put("pages", page.getPages());
         // 返回统计数据（包含总数）
         Map<String, Object> stats = new HashMap<>();

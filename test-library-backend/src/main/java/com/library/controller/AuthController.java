@@ -56,7 +56,7 @@ public class AuthController {
             return result;
         }
 
-        // 查询用户关联的角色ID列表->可能有多个角色
+        // 查询用户关联的角色ID列表->可能有多个角色（方案废弃）
         List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(sysUser.getId());
 
         // 查询角色信息
@@ -96,7 +96,7 @@ public class AuthController {
         } else if (roleKeys.contains("librarian")) {
             mainRole = "librarian";
         }
-        // userType: admin/librarian 表示工作人员，reader 表示读者
+        // userType: admin/librarian 表示工作人员，reader 表示读者（借阅管理与我的借阅）
         String userType = "reader".equals(mainRole) ? "reader" : "staff";
 
         // 生成 JWT token

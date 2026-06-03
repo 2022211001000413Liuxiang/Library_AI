@@ -110,6 +110,7 @@
 
 <script>
 import { getProfile, updateProfile, changePassword, uploadAvatar, updateAvatar } from '@/api/profile'
+import { logout } from '@/api/auth'
 
 export default {
   name: 'Profile',
@@ -268,11 +269,15 @@ export default {
               newPassword: this.passwordForm.newPassword
             })
             this.$message.success('密码修改成功，请重新登录')
-            this.passwordForm = {
-              oldPassword: '',
-              newPassword: '',
-              confirmPassword: ''
-            }
+            await logout()
+            localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
+            localStorage.removeItem('userType')
+            localStorage.removeItem('userRole')
+            localStorage.removeItem('permissions')
+            localStorage.removeItem('ai_session_id')
+            localStorage.removeItem('ai_user_id')
+            this.$router.push('/login')
           } catch (error) {
             this.$message.error('修改密码失败')
           }

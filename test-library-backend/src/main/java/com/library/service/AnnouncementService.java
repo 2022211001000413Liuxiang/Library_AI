@@ -17,10 +17,12 @@ public class AnnouncementService {
     @Autowired
     private AnnouncementMapper announcementMapper;
 
-    public Page<Announcement> getAnnouncements(int current, int size, String title, Integer priority) {
+    public Page<Announcement> getAnnouncements(int current, int size, String title, Integer priority, Integer status) {
         Page<Announcement> page = new Page<>(current, size);
         QueryWrapper<Announcement> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 1);
+        if (status != null) {
+            wrapper.eq("status", status);
+        }
         if (StringUtils.hasText(title)) {
             wrapper.like("title", title);
         }

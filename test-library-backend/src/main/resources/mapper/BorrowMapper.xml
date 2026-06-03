@@ -15,9 +15,11 @@
         <result column="bookName" property="bookName"/>
         <result column="userName" property="userName"/>
     </resultMap>
-
+<!--单页数据查询-->
     <select id="selectBorrowPage" resultMap="BaseResultMap">
-        SELECT b.*, bk.name as bookName, u.name as userName, u.avatar as userAvatar
+        SELECT b.*,
+               CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               bk.name as bookName, u.name as userName, u.avatar as userAvatar
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
         LEFT JOIN sys_user u ON b.user_id = u.id
@@ -28,29 +30,69 @@
             <if test="userName != null and userName != ''">
                 AND u.name LIKE CONCAT('%', #{userName}, '%')
             </if>
-            <if test="status != null">
-                AND b.status = #{status}
+            <if test="status != null and status == 0">
+                AND b.status = 0 AND b.due_date >= CURDATE()
+            </if>
+            <if test="status != null and status == 1">
+                AND b.status = 1
+            </if>
+            <if test="status != null and status == 2">
+                AND (b.status = 2 OR (b.status = 0 AND b.due_date &lt; CURDATE()))
             </if>
         </where>
         ORDER BY b.create_time DESC
     </select>
-
+<!--记录总数-->
+    <select id="selectBorrowPageCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM borrow b
+        LEFT JOIN book bk ON b.book_id = bk.id
+        LEFT JOIN sys_user u ON b.user_id = u.id
+        <where>
+            <if test="bookName != null and bookName != ''">
+                AND bk.name LIKE CONCAT('%', #{bookName}, '%')
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="status != null and status == 0">
+                AND b.status = 0 AND b.due_date >= CURDATE()
+            </if>
+            <if test="status != null and status == 1">
+                AND b.status = 1
+            </if>
+            <if test="status != null and status == 2">
+                AND (b.status = 2 OR (b.status = 0 AND b.due_date &lt; CURDATE()))
+            </if>
+        </where>
+    </select>
+<!--根据id查借阅记录-->
     <select id="selectBorrowPageByUserId" resultMap="BaseResultMap">
-        SELECT b.*, bk.name as bookName, u.name as userName
+        SELECT b.*,
+               CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               bk.name as bookName, u.name as userName
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
         LEFT JOIN sys_user u ON b.user_id = u.id
         <where>
             b.user_id = #{userId}
-            <if test="status != null">
-                AND b.status = #{status}
+            <if test="status != null and status == 0">
+                AND b.status = 0 AND b.due_date >= CURDATE()
+            </if>
+            <if test="status != null and status == 1">
+                AND b.status = 1
+            </if>
+            <if test="status != null and status == 2">
+                AND (b.status = 2 OR (b.status = 0 AND b.due_date &lt; CURDATE()))
             </if>
         </where>
         ORDER BY b.create_time DESC
     </select>
-
+<!--查询单条详情-->
     <select id="selectBorrowById" resultMap="BaseResultMap">
-        SELECT b.*, bk.name as bookName, u.name as userName
+        SELECT b.*,
+               CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               bk.name as bookName, u.name as userName
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
         LEFT JOIN sys_user u ON b.user_id = u.id

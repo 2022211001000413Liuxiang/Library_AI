@@ -121,7 +121,8 @@ public class UserController {
      * 修改密码
      */
     @PutMapping("/password")
-    public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
+    public Map<String, Object> changePassword(@RequestBody Map<String, String> params,
+                                              javax.servlet.http.HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
@@ -138,8 +139,34 @@ public class UserController {
             return result;
         }
 
-        result.put("success", true);
-        result.put("message", "密码修改成功");
+        // 从JWT中获取当前用户ID
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            result.put("success", false);
+            result.put("message", "未登录");
+            return result;
+        }
+
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null) {
+            result.put("success", false);
+            result.put("message", "用户不存在");
+            return result;
+        }
+
+        // 验证旧密码
+        if (!oldPassword.equals(user.getPassword())) {
+            result.put("success", false);
+            result.put("message", "当前密码错误");
+            return result;
+        }
+
+        // 更新密码
+        user.setPassword(newPassword);
+        user.setUpdateTime(java.time.LocalDateTime.now());
+        int rows = sysUserMapper.updateById(user);
+        result.put("success", rows > 0);
+        result.put("message", rows > 0 ? "密码修改成功" : "密码修改失败");
         return result;
     }
 

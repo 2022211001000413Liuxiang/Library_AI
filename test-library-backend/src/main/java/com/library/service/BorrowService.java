@@ -25,11 +25,11 @@ public class BorrowService {
     private BookMapper bookMapper;
 
     public IPage<Borrow> getBorrows(int current, int size, String bookName, String userName, Integer status) {
-        Page<Borrow> page = new Page<>(current, size);
-        // 使用自定义XML查询
+        Page<Borrow> page = new Page<>(current, size, false);
+        // 使用自定义XML查询（分页插件自动加LIMIT）
         IPage<Borrow> result = borrowMapper.selectBorrowPage(page, bookName, userName, status);
-        // 手动设置总数，因为自定义XML查询可能不会自动计算总数
-        result.setTotal(borrowMapper.selectCount(new QueryWrapper<Borrow>()));
+        // 使用带筛选条件的count查询设置总数
+        result.setTotal(borrowMapper.selectBorrowPageCount(bookName, userName, status));
         return result;
     }
 
@@ -95,7 +95,7 @@ public class BorrowService {
 
     public Long getBorrowingCount() {
         QueryWrapper<Borrow> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 0);
+        wrapper.eq("status", 0).ge("due_date", LocalDate.now());
         return borrowMapper.selectCount(wrapper);
     }
 
@@ -107,8 +107,7 @@ public class BorrowService {
 
     public Long getOverdueCount() {
         QueryWrapper<Borrow> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 0);
-        wrapper.lt("due_date", LocalDate.now());
+        wrapper.and(w -> w.eq("status", 2).or(o -> o.eq("status", 0).lt("due_date", LocalDate.now())));
         return borrowMapper.selectCount(wrapper);
     }
 
@@ -117,18 +116,9 @@ public class BorrowService {
         QueryWrapper<Borrow> wrapperAll = new QueryWrapper<>();
         stats.put("total", borrowMapper.selectCount(wrapperAll));
 
-        QueryWrapper<Borrow> wrapperBorrowing = new QueryWrapper<>();
-        wrapperBorrowing.eq("status", 0);
-        stats.put("borrowing", borrowMapper.selectCount(wrapperBorrowing));
-
-        QueryWrapper<Borrow> wrapperReturned = new QueryWrapper<>();
-        wrapperReturned.eq("status", 1);
-        stats.put("returned", borrowMapper.selectCount(wrapperReturned));
-
-        QueryWrapper<Borrow> wrapperOverdue = new QueryWrapper<>();
-        wrapperOverdue.eq("status", 0);
-        wrapperOverdue.lt("due_date", LocalDate.now());
-        stats.put("overdue", borrowMapper.selectCount(wrapperOverdue));
+        stats.put("borrowing", getBorrowingCount());
+        stats.put("returned", getReturnedCount());
+        stats.put("overdue", getOverdueCount());
 
         return stats;
     }
@@ -140,25 +130,16 @@ public class BorrowService {
         wrapperAll.eq("user_id", userId);
         stats.put("total", borrowMapper.selectCount(wrapperAll));
 
-        QueryWrapper<Borrow> wrapperBorrowing = new QueryWrapper<>();
-        wrapperBorrowing.eq("user_id", userId).eq("status", 0);
-        stats.put("borrowing", borrowMapper.selectCount(wrapperBorrowing));
-
-        QueryWrapper<Borrow> wrapperReturned = new QueryWrapper<>();
-        wrapperReturned.eq("user_id", userId).eq("status", 1);
-        stats.put("returned", borrowMapper.selectCount(wrapperReturned));
-
-        QueryWrapper<Borrow> wrapperOverdue = new QueryWrapper<>();
-        wrapperOverdue.eq("user_id", userId).eq("status", 0);
-        wrapperOverdue.lt("due_date", LocalDate.now());
-        stats.put("overdue", borrowMapper.selectCount(wrapperOverdue));
+        stats.put("borrowing", getBorrowingCountByUserId(userId));
+        stats.put("returned", getReturnedCountByUserId(userId));
+        stats.put("overdue", getOverdueCountByUserId(userId));
 
         return stats;
     }
 
     public Long getBorrowingCountByUserId(Long userId) {
         QueryWrapper<Borrow> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId).eq("status", 0);
+        wrapper.eq("user_id", userId).eq("status", 0).ge("due_date", LocalDate.now());
         return borrowMapper.selectCount(wrapper);
     }
 
@@ -170,8 +151,7 @@ public class BorrowService {
 
     public Long getOverdueCountByUserId(Long userId) {
         QueryWrapper<Borrow> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId).eq("status", 0);
-        wrapper.lt("due_date", LocalDate.now());
+        wrapper.eq("user_id", userId).and(w -> w.eq("status", 2).or(o -> o.eq("status", 0).lt("due_date", LocalDate.now())));
         return borrowMapper.selectCount(wrapper);
     }
 }
