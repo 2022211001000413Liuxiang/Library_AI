@@ -37,6 +37,11 @@
             <span slot="title">图书管理</span>
           </el-menu-item>
 
+          <el-menu-item index="/book-browse" v-if="isReader">
+            <i class="el-icon-collection"></i>
+            <span slot="title">图书浏览</span>
+          </el-menu-item>
+
           <el-menu-item v-if="isLibrarian" index="/borrow">
             <i class="el-icon-s-order"></i>
             <span slot="title">借阅管理</span>

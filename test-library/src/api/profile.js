@@ -1,11 +1,10 @@
 import request from './index'
 
 // 获取个人信息
-export function getProfile(userId) {
+export function getProfile() {
   return request({
     url: '/profile',
-    method: 'get',
-    params: { userId }
+    method: 'get'
   })
 }
 
@@ -42,10 +41,10 @@ export function uploadAvatar(file) {
 }
 
 // 更新头像 URL
-export function updateAvatar(userId, avatarUrl) {
+export function updateAvatar(avatarUrl) {
   return request({
     url: '/avatar',
     method: 'put',
-    data: { userId, avatarUrl }
+    data: { avatarUrl }
   })
 }

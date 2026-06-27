@@ -43,12 +43,21 @@ public class BookService {
         if (book.getStock() > 0) {
             book.setStatus(0);
         }
+        autoFillCoverUrl(book);
         return bookMapper.insert(book) > 0;
     }
 
     public boolean update(Book book) {
         book.setUpdateTime(LocalDateTime.now());
+        autoFillCoverUrl(book);
         return bookMapper.updateById(book) > 0;
+    }
+
+    private void autoFillCoverUrl(Book book) {
+        if (!StringUtils.hasText(book.getCoverUrl()) && StringUtils.hasText(book.getIsbn())) {
+            String isbn = book.getIsbn().replaceAll("[^0-9Xx]", "");
+            book.setCoverUrl("https://covers.openlibrary.org/b/isbn/" + isbn + "-L.jpg");
+        }
     }
 
     public boolean delete(Long id) {

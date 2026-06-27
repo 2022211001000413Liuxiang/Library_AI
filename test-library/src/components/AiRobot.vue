@@ -39,6 +39,32 @@
               <div class="mode-item__desc">解答藏书相关问题</div>
             </div>
           </div>
+          <div
+            class="mode-item"
+            :class="{ 'mode-item--active': currentMode === 'summarize' }"
+            @click="currentMode = 'summarize'"
+          >
+            <div class="mode-item__icon">
+              <i class="el-icon-document"></i>
+            </div>
+            <div class="mode-item__content">
+              <div class="mode-item__title">图书摘要</div>
+              <div class="mode-item__desc">生成图书内容摘要</div>
+            </div>
+          </div>
+          <div
+            class="mode-item"
+            :class="{ 'mode-item--active': currentMode === 'similar' }"
+            @click="currentMode = 'similar'"
+          >
+            <div class="mode-item__icon">
+              <i class="el-icon-connection"></i>
+            </div>
+            <div class="mode-item__content">
+              <div class="mode-item__title">相似推荐</div>
+              <div class="mode-item__desc">推荐相似风格图书</div>
+            </div>
+          </div>
         </el-card>
 
         <!-- 新建对话按钮 -->
@@ -73,6 +99,13 @@
                 <div class="history-item__summary">{{ conv.summary || '新对话' }}</div>
                 <div class="history-item__time">{{ formatTime(conv.createTime) }}</div>
               </div>
+              <el-button
+                class="history-item__delete"
+                type="text"
+                icon="el-icon-delete"
+                size="mini"
+                @click.stop="deleteConversation(conv)"
+              ></el-button>
             </div>
           </div>
           <div v-else class="history-empty">暂无历史对话</div>
@@ -105,39 +138,41 @@
             <span><i class="el-icon-star-on"></i>智能推荐</span>
           </div>
 
-          <div class="recommend-intro">
-            <p>描述您的阅读偏好，我将为您推荐合适的图书：</p>
-          </div>
-
-          <el-input
-            v-model="recommendInput"
-            type="textarea"
-            :rows="4"
-            placeholder="例如：我喜欢科幻小说，阿西莫夫的作品尤其喜欢。也喜欢历史传记类..."
-            class="recommend-input"
-            maxlength="500"
-            show-word-limit
-          ></el-input>
-
-          <div class="recommend-actions">
-            <el-button
-              type="primary"
-              icon="el-icon-magic-stick"
-              @click="handleRecommend"
-              :loading="loading"
-              size="medium"
-            >
-              为我推荐图书
-            </el-button>
-          </div>
-
-          <!-- 推荐结果 -->
-          <div v-if="recommendResult" class="result-box">
-            <div class="result-header">
-              <i class="el-icon-data-line"></i>
-              <span>推荐结果</span>
+          <div class="recommend-wrapper">
+            <div class="recommend-intro">
+              <p>描述您的阅读偏好，我将为您推荐合适的图书：</p>
             </div>
-            <div class="result-content">{{ recommendResult }}</div>
+
+            <el-input
+              v-model="recommendInput"
+              type="textarea"
+              :rows="4"
+              placeholder="例如：我喜欢科幻小说，阿西莫夫的作品尤其喜欢。也喜欢历史传记类..."
+              class="recommend-input"
+              maxlength="500"
+              show-word-limit
+            ></el-input>
+
+            <div class="recommend-actions">
+              <el-button
+                type="primary"
+                icon="el-icon-magic-stick"
+                @click="handleRecommend"
+                :loading="loading"
+                size="medium"
+              >
+                为我推荐图书
+              </el-button>
+            </div>
+
+            <!-- 推荐结果 -->
+            <div v-if="recommendResult" class="result-box">
+              <div class="result-header">
+                <i class="el-icon-data-line"></i>
+                <span>推荐结果</span>
+              </div>
+              <div class="result-content">{{ recommendResult }}</div>
+            </div>
           </div>
         </el-card>
 
@@ -202,13 +237,85 @@
             </el-input>
           </div>
         </el-card>
+
+        <!-- 图书摘要模式 -->
+        <el-card shadow="hover" class="chat-card" v-if="currentMode === 'summarize'">
+          <div slot="header" class="card-header">
+            <span><i class="el-icon-document"></i>图书摘要</span>
+          </div>
+          <div class="recommend-wrapper">
+            <div class="recommend-intro">
+              <p>输入书名，我将为您生成内容摘要：</p>
+            </div>
+            <el-input
+              v-model="summarizeInput"
+              placeholder="请输入书名，例如：三体"
+              class="recommend-input"
+              size="medium"
+              clearable
+            >
+              <el-button
+                slot="append"
+                icon="el-icon-document"
+                @click="handleSummarize"
+                :loading="loading"
+                type="primary"
+              >
+                生成摘要
+              </el-button>
+            </el-input>
+            <div v-if="summarizeResult" class="result-box">
+              <div class="result-header">
+                <i class="el-icon-document"></i>
+                <span>内容摘要</span>
+              </div>
+              <div class="result-content">{{ summarizeResult }}</div>
+            </div>
+          </div>
+        </el-card>
+
+        <!-- 相似推荐模式 -->
+        <el-card shadow="hover" class="chat-card" v-if="currentMode === 'similar'">
+          <div slot="header" class="card-header">
+            <span><i class="el-icon-connection"></i>相似图书推荐</span>
+          </div>
+          <div class="recommend-wrapper">
+            <div class="recommend-intro">
+              <p>输入您喜欢的书名，我将推荐风格相似的图书：</p>
+            </div>
+            <el-input
+              v-model="similarInput"
+              placeholder="请输入书名，例如：红楼梦"
+              class="recommend-input"
+              size="medium"
+              clearable
+            >
+              <el-button
+                slot="append"
+                icon="el-icon-connection"
+                @click="handleSimilar"
+                :loading="loading"
+                type="primary"
+              >
+                推荐相似
+              </el-button>
+            </el-input>
+            <div v-if="similarResult" class="result-box">
+              <div class="result-header">
+                <i class="el-icon-connection"></i>
+                <span>相似图书推荐</span>
+              </div>
+              <div class="result-content">{{ similarResult }}</div>
+            </div>
+          </div>
+        </el-card>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { recommendBooks, chatWithAI, createSession, getHistory, getUserSessions, endSession } from '@/api/ai'
+import { recommendBooks, chatWithAI, createSession, getHistory, getUserSessions, endSession, summarizeBook, recommendSimilar } from '@/api/ai'
 
 export default {
   name: 'AiRobot',
@@ -218,6 +325,10 @@ export default {
       recommendInput: '',
       recommendResult: '',
       chatInput: '',
+      summarizeInput: '',
+      summarizeResult: '',
+      similarInput: '',
+      similarResult: '',
       messages: [
         {
           role: 'assistant',
@@ -280,6 +391,10 @@ export default {
               time: this.getCurrentTime()
             })
           }
+        } else {
+          // 会话在后端不存在，清除并创建新会话
+          localStorage.removeItem('ai_session_id')
+          await this.initSession()
         }
       } catch (error) {
         console.error('加载历史失败:', error)
@@ -288,19 +403,8 @@ export default {
       this.loadConversationList()
     },
     async initSession() {
-      // 从localStorage获取真实用户ID
-      const userInfoStr = localStorage.getItem('userInfo')
-      let userId = 1
-      if (userInfoStr) {
-        try {
-          const userInfo = JSON.parse(userInfoStr)
-          userId = userInfo.id || 1
-        } catch (e) {}
-      }
-      // 保存AI用户ID（基于真实用户ID）
-      localStorage.setItem('ai_user_id', userId)
       try {
-        const res = await createSession(userId)
+        const res = await createSession()
         if (res.success) {
           this.sessionId = res.sessionId
           this.conversationId = res.conversationId
@@ -323,16 +427,8 @@ export default {
       this.loadConversationList()
     },
     async loadConversationList() {
-      const userInfoStr = localStorage.getItem('userInfo')
-      let userId = 1
-      if (userInfoStr) {
-        try {
-          const userInfo = JSON.parse(userInfoStr)
-          userId = userInfo.id || 1
-        } catch (e) {}
-      }
       try {
-        const res = await getUserSessions(userId)
+        const res = await getUserSessions()
         if (res.success) {
           this.conversationList = res.conversations || []
         }
@@ -371,6 +467,10 @@ export default {
     handleModeChange() {
       this.recommendInput = ''
       this.recommendResult = ''
+      this.summarizeInput = ''
+      this.summarizeResult = ''
+      this.similarInput = ''
+      this.similarResult = ''
     },
     handleTipClick(tip) {
       this.chatInput = tip
@@ -383,16 +483,62 @@ export default {
         }
       })
     },
-    getUserId() {
-      const userInfoStr = localStorage.getItem('userInfo')
-      let userId = 1
-      if (userInfoStr) {
-        try {
-          const userInfo = JSON.parse(userInfoStr)
-          userId = userInfo.id || 1
-        } catch (e) {}
+    async handleSummarize() {
+      if (!this.summarizeInput.trim()) {
+        this.$message.warning('请输入书名')
+        return
       }
-      return userId
+      this.loading = true
+      try {
+        const res = await summarizeBook(this.summarizeInput, this.sessionId)
+        if (res.success) {
+          this.summarizeResult = res.summary
+        } else {
+          this.$message.error(res.message || '生成摘要失败')
+        }
+      } catch (error) {
+        this.$message.error('生成摘要失败，请稍后重试')
+      } finally {
+        this.loading = false
+      }
+    },
+    async handleSimilar() {
+      if (!this.similarInput.trim()) {
+        this.$message.warning('请输入书名')
+        return
+      }
+      this.loading = true
+      try {
+        const res = await recommendSimilar(this.similarInput, this.sessionId)
+        if (res.success) {
+          this.similarResult = res.recommendation
+        } else {
+          this.$message.error(res.message || '推荐失败')
+        }
+      } catch (error) {
+        this.$message.error('推荐失败，请稍后重试')
+      } finally {
+        this.loading = false
+      }
+    },
+    async deleteConversation(conv) {
+      try {
+        await this.$confirm('确定要删除这个对话吗？', '删除确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        await endSession(conv.sessionId)
+        this.$message.success('对话已删除')
+        if (conv.sessionId === this.sessionId) {
+          this.startNewConversation()
+        }
+        this.loadConversationList()
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error('删除失败')
+        }
+      }
     },
     async handleRecommend() {
       if (!this.recommendInput.trim()) {
@@ -402,7 +548,7 @@ export default {
 
       this.loading = true
       try {
-        const res = await recommendBooks(this.recommendInput, this.getUserId(), this.sessionId)
+        const res = await recommendBooks(this.recommendInput, this.sessionId)
         if (res.success) {
           this.recommendResult = res.recommendation
         } else {
@@ -427,7 +573,7 @@ export default {
       this.scrollToBottom()
 
       try {
-        const res = await chatWithAI(question, this.getUserId(), this.sessionId)
+        const res = await chatWithAI(question, this.sessionId)
         if (res.success) {
           this.messages.push({ role: 'assistant', content: res.answer, time: this.getCurrentTime() })
         } else {
@@ -634,6 +780,16 @@ export default {
   margin-top: 2px;
 }
 
+.history-item__delete {
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 4px;
+  color: #f56c6c;
+}
+.history-item:hover .history-item__delete {
+  opacity: 1;
+}
+
 .history-empty {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -708,7 +864,7 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .card-header {
@@ -723,6 +879,12 @@ export default {
 }
 
 /* ========== 推荐模式 ========== */
+.recommend-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .recommend-intro {
   padding: var(--spacing-base);
   background: #f5f7fa;
@@ -776,8 +938,6 @@ export default {
   background: #fff;
   line-height: 1.8;
   white-space: pre-wrap;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 /* ========== 消息区域 ========== */
@@ -818,7 +978,7 @@ export default {
 }
 
 .message-content {
-  max: 70%;
+  max-width: 70%;
 }
 
 .message-bubble {

@@ -262,7 +262,6 @@ export default {
         const params = {
           current: this.pagination.currentPage,
           size: this.pagination.pageSize,
-          userId: this.currentUserId,
           status: this.searchForm.status || null
         }
         const res = await getMyBorrows(params)

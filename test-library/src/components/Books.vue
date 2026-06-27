@@ -7,6 +7,7 @@
         <p class="page-desc">管理图书馆藏书信息</p>
       </div>
       <div class="page-header__right">
+        <el-button icon="el-icon-upload2" @click="importDialogVisible = true">批量导入</el-button>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">添加图书</el-button>
       </div>
     </div>
@@ -54,7 +55,8 @@
         <el-table-column prop="name" label="书名" min-width="180">
           <template slot-scope="scope">
             <div class="book-name">
-              <i class="el-icon-reading book-icon"></i>
+              <img v-if="scope.row.coverUrl" :src="scope.row.coverUrl" class="book-cover-thumb" />
+              <i v-else class="el-icon-reading book-icon"></i>
               <span>{{ scope.row.name }}</span>
             </div>
           </template>
@@ -114,6 +116,21 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="600px" center custom-class="book-dialog">
       <el-form :model="form" :rules="rules" ref="form" label-width="100px" class="dialog-form">
+        <el-form-item label="封面">
+          <el-upload
+            class="cover-upload"
+            action="#"
+            :show-file-list="false"
+            :before-upload="beforeCoverUpload"
+            :http-request="handleCoverUpload"
+          >
+            <img v-if="form.coverUrl" :src="form.coverUrl" class="cover-preview" />
+            <div v-else class="cover-placeholder">
+              <i class="el-icon-plus"></i>
+              <span>上传封面</span>
+            </div>
+          </el-upload>
+        </el-form-item>
         <el-form-item label="书名" prop="name">
           <el-input v-model="form.name" placeholder="请输入书名" prefix-icon="el-icon-reading"></el-input>
         </el-form-item>
@@ -148,17 +165,66 @@
         <el-form-item label="简介" prop="description">
           <el-input type="textarea" v-model="form.description" :rows="3" placeholder="请输入图书简介" maxlength="200" show-word-limit></el-input>
         </el-form-item>
+        <el-form-item label="ISBN">
+          <el-input v-model="form.isbn" placeholder="输入ISBN可自动获取封面"></el-input>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false" icon="el-icon-close">取 消</el-button>
         <el-button type="primary" @click="handleSubmit" icon="el-icon-check">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 批量导入对话框 -->
+    <el-dialog title="批量导入图书" :visible.sync="importDialogVisible" width="500px" center custom-class="book-dialog">
+      <div class="import-dialog-body">
+        <div class="import-tip">
+          <i class="el-icon-info"></i>
+          <span>请先下载模板，按格式填写后上传</span>
+        </div>
+        <div class="import-actions">
+          <el-button icon="el-icon-download" @click="downloadTemplate">下载模板</el-button>
+          <el-upload
+            action="#"
+            :show-file-list="false"
+            :before-upload="beforeImport"
+            :http-request="handleImport"
+            accept=".xlsx,.xls"
+          >
+            <el-button type="primary" icon="el-icon-upload2">选择文件</el-button>
+          </el-upload>
+        </div>
+        <div v-if="importResult" class="import-result">
+          <el-alert
+            :title="importResult.success ? '导入完成' : '导入失败'"
+            :type="importResult.success ? 'success' : 'error'"
+            show-icon
+            :closable="false"
+          >
+            <div v-if="importResult.success">
+              <p>共读取 {{ importResult.totalRows }} 行，成功导入 {{ importResult.imported }} 条</p>
+              <p v-if="importResult.errors && importResult.errors.length > 0" style="color: #e6a23c;">
+                以下行导入失败：
+              </p>
+              <ul v-if="importResult.errors && importResult.errors.length > 0" class="error-list">
+                <li v-for="(err, idx) in importResult.errors" :key="idx">{{ err }}</li>
+              </ul>
+            </div>
+            <div v-else>
+              <p>{{ importResult.message }}</p>
+            </div>
+          </el-alert>
+        </div>
+      </div>
+      <span slot="footer">
+        <el-button @click="importDialogVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getBooks, addBook, updateBook, deleteBook } from '@/api/book'
+import { getBooks, addBook, updateBook, deleteBook, uploadBookCover, importBooks } from '@/api/book'
 
 export default {
   name: 'Books',
@@ -178,6 +244,8 @@ export default {
       loading: false,
       dialogVisible: false,
       dialogTitle: '添加图书',
+      importDialogVisible: false,
+      importResult: null,
       form: {
         id: null,
         name: '',
@@ -186,7 +254,9 @@ export default {
         publisher: '',
         publishDate: '',
         stock: 0,
-        description: ''
+        description: '',
+        isbn: '',
+        coverUrl: ''
       },
       rules: {
         name: [{ required: true, message: '请输入书名', trigger: 'blur' }],
@@ -234,13 +304,39 @@ export default {
     },
     handleAdd() {
       this.dialogTitle = '添加图书'
-      this.form = { id: null, name: '', author: '', category: '', publisher: '', publishDate: '', stock: 0, description: '' }
+      this.form = { id: null, name: '', author: '', category: '', publisher: '', publishDate: '', stock: 0, description: '', isbn: '', coverUrl: '' }
       this.dialogVisible = true
     },
     handleEdit(row) {
       this.dialogTitle = '编辑图书'
       this.form = { ...row }
       this.dialogVisible = true
+    },
+    beforeCoverUpload(file) {
+      const isImage = file.type === 'image/jpeg' || file.type === 'image/png'
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isImage) {
+        this.$message.error('封面只能是 JPG 或 PNG 格式')
+        return false
+      }
+      if (!isLt2M) {
+        this.$message.error('封面大小不能超过 2MB')
+        return false
+      }
+      return true
+    },
+    async handleCoverUpload(options) {
+      try {
+        const res = await uploadBookCover(options.file)
+        if (res.success) {
+          this.form.coverUrl = res.url
+          this.$message.success('封面上传成功')
+        } else {
+          this.$message.error(res.message || '上传失败')
+        }
+      } catch (error) {
+        this.$message.error('封面上传失败')
+      }
     },
     async handleDelete(row) {
       try {
@@ -284,6 +380,45 @@ export default {
     handleCurrentChange(val) {
       this.pagination.currentPage = val
       this.loadBooks()
+    },
+    downloadTemplate() {
+      const headers = ['书名', '作者', '分类', '出版社', '出版日期', '库存', '简介', 'ISBN']
+      const example = ['JavaScript高级程序设计', 'Nicholas C. Zakas', 'computer', '人民邮电出版社', '2020-01-01', '5', 'JavaScript经典教材', '9787115545381']
+      const note = '分类值: computer=计算机, literature=文学, history=历史, science=科学'
+      const content = [headers.join(','), example.join(','), note].join('\n')
+      const blob = new Blob(['﻿' + content], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = '图书导入模板.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    beforeImport(file) {
+      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        || file.type === 'application/vnd.ms-excel'
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isExcel) {
+        this.$message.error('只能上传 Excel 文件 (.xlsx)')
+        return false
+      }
+      if (!isLt10M) {
+        this.$message.error('文件大小不能超过 10MB')
+        return false
+      }
+      return true
+    },
+    async handleImport(options) {
+      try {
+        const res = await importBooks(options.file)
+        this.importResult = res
+        if (res.success) {
+          this.$message.success(`成功导入 ${res.imported} 本图书`)
+          this.loadBooks()
+        }
+      } catch (error) {
+        this.importResult = { success: false, message: '导入失败，请检查文件格式' }
+      }
     }
   }
 }
@@ -437,5 +572,81 @@ export default {
 .dialog-footer >>> .el-button {
   border-radius: var(--radius-small);
   padding: 10px 24px;
+}
+
+/* ========== 封面上传 ========== */
+.cover-upload >>> .el-upload {
+  cursor: pointer;
+}
+.cover-preview {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #dcdfe6;
+}
+.cover-placeholder {
+  width: 120px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #dcdfe6;
+  border-radius: 6px;
+  color: #909399;
+  background: #fafafa;
+}
+.cover-placeholder i {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.cover-placeholder span {
+  font-size: 12px;
+}
+
+.book-cover-thumb {
+  width: 32px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 3px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* ========== 批量导入 ========== */
+.import-dialog-body {
+  padding: 0 10px;
+}
+.import-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f4f4f5;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #909399;
+  font-size: 14px;
+}
+.import-tip i {
+  color: #409eff;
+  font-size: 18px;
+}
+.import-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.import-result {
+  margin-top: 16px;
+}
+.error-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+}
+.error-list li {
+  margin-bottom: 4px;
 }
 </style>

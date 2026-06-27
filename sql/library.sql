@@ -188,6 +188,8 @@ CREATE TABLE `book`  (
   `stock` int NULL DEFAULT 0 COMMENT '库存',
   `status` tinyint NULL DEFAULT 0 COMMENT '状态(0:可借,1:已借出)',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '简介',
+  `isbn` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ISBN',
+  `cover_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封面图片URL',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
@@ -196,31 +198,31 @@ CREATE TABLE `book`  (
 -- ----------------------------
 -- Records of book
 -- ----------------------------
-INSERT INTO `book` VALUES (1, 'JavaScript高级程序设计', 'Nicholas C. Zakas', '计算机', '人民邮电出版社', '2020-01-01', 5, 0, 'JavaScript经典教材', '2026-03-04 20:43:26', '2026-04-16 16:17:00');
-INSERT INTO `book` VALUES (2, 'Vue.js实战', '梁灏', '计算机', '清华大学出版社', '2019-06-01', 4, 0, 'Vue.js入门到精通', '2026-03-04 20:43:26', '2026-04-16 16:01:20');
-INSERT INTO `book` VALUES (3, 'Python编程', 'Mark Lutz', '计算机', '中国电力出版社', '2019-03-01', 7, 0, 'Python经典教程', '2026-03-04 20:43:26', '2026-03-12 21:25:19');
-INSERT INTO `book` VALUES (4, '红楼梦', '曹雪芹', '文学', '人民文学出版社', '2018-01-01', 9, 0, '中国古典四大名著之一', '2026-03-04 20:43:26', '2026-03-21 19:55:47');
-INSERT INTO `book` VALUES (5, '明朝那些事儿', '当年明月', '历史', '中国友谊出版公司', '2017-05-01', 5, 0, '通俗明朝历史', '2026-03-04 20:43:26', '2026-03-12 21:50:49');
-INSERT INTO `book` VALUES (6, '数据结构与算法', '严蔚敏', '计算机', '清华大学出版社', '2018-09-01', 3, 0, '数据结构经典教材', '2026-03-04 20:43:26', '2026-03-12 21:59:23');
-INSERT INTO `book` VALUES (7, '三国演义', '罗贯中', '文学', '人民文学出版社', '2019-01-01', 6, 0, '中国古典四大名著之一', '2026-03-04 20:43:26', '2026-04-23 17:29:55');
-INSERT INTO `book` VALUES (8, '人类简史', '尤瓦尔·赫拉利', '科学', '中信出版社', '2016-11-01', 4, 0, '从动物到上帝', '2026-03-04 20:43:26', '2026-03-12 21:51:35');
-INSERT INTO `book` VALUES (9, '测试', '111', 'literature', '222', '2026-03-02', 5, 1, '无', '2026-03-04 20:48:40', '2026-04-16 15:43:17');
-INSERT INTO `book` VALUES (10, '西游记', '吴承恩', '文学', '人民文学出版社', '2018-06-01', 8, 0, '中国古典四大名著之一，讲述唐僧师徒西天取经的故事', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (11, '水浒传', '施耐庵', '文学', '人民文学出版社', '2017-03-01', 7, 0, '中国古典四大名著之一，讲述梁山好汉的故事', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (12, 'Spring Boot实战', '丁雪丰', '计算机', '人民邮电出版社', '2021-05-01', 6, 0, 'Spring Boot框架入门与进阶', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (13, 'MySQL必知必会', 'Ben Forta', '计算机', '人民邮电出版社', '2020-09-01', 5, 0, 'MySQL数据库入门经典教程', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (14, '活着', '余华', '文学', '作家出版社', '2018-04-01', 10, 0, '余华经典长篇小说，讲述人生的苦难与坚韧', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (15, '百年孤独', '加西亚·马尔克斯', '文学', '南海出版公司', '2017-08-01', 6, 0, '魔幻现实主义文学经典，布恩迪亚家族百年兴衰', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (16, '时间简史', '史蒂芬·霍金', '科学', '湖南科学技术出版社', '2019-01-01', 5, 0, '探索宇宙奥秘的科普经典', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (17, '三体', '刘慈欣', '科幻', '重庆出版社', '2019-06-01', 8, 0, '中国科幻里程碑之作，地球文明与三体文明的碰撞', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (18, '流浪地球', '刘慈欣', '科幻', '中国华侨出版社', '2020-01-01', 6, 0, '太阳即将毁灭，人类开启流浪地球计划', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (19, '万历十五年', '黄仁宇', '历史', '中华书局', '2018-08-01', 4, 0, '以大历史观审视明朝关键年份', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (20, '全球通史', '斯塔夫里阿诺斯', '历史', '北京大学出版社', '2017-01-01', 5, 0, '从史前到21世纪的全球历史', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (21, '算法导论', 'Thomas H. Cormen', '计算机', '机械工业出版社', '2020-06-01', 4, 0, '计算机算法领域最经典的教材', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (22, '设计模式', 'Erich Gamma', '计算机', '机械工业出版社', '2019-09-01', 3, 0, '面向对象设计的经典著作', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (23, '围城', '钱钟书', '文学', '人民文学出版社', '2017-05-01', 7, 0, '钱钟书经典讽刺小说，城里的人想出去，城外的人想进来', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (24, '平凡的世界', '路遥', '文学', '北京十月文艺出版社', '2018-09-01', 9, 0, '路遥长篇巨著，全景展现中国当代城乡社会生活', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
-INSERT INTO `book` VALUES (25, '万物简史', '比尔·布莱森', '科学', '接力出版社', '2018-02-01', 5, 0, '一部有关现代科学发展史的科普巨著', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (1, 'JavaScript高级程序设计', 'Nicholas C. Zakas', '计算机', '人民邮电出版社', '2020-01-01', 5, 0, 'JavaScript经典教材', '9787115545381', 'https://covers.openlibrary.org/b/isbn/9787115545381-L.jpg', '2026-03-04 20:43:26', '2026-04-16 16:17:00');
+INSERT INTO `book` VALUES (2, 'Vue.js实战', '梁灏', '计算机', '清华大学出版社', '2019-06-01', 4, 0, 'Vue.js入门到精通', '9787302483182', 'https://covers.openlibrary.org/b/isbn/9787302483182-L.jpg', '2026-03-04 20:43:26', '2026-04-16 16:01:20');
+INSERT INTO `book` VALUES (3, 'Python编程', 'Mark Lutz', '计算机', '中国电力出版社', '2019-03-01', 7, 0, 'Python经典教程', '9787508358987', 'https://covers.openlibrary.org/b/isbn/9787508358987-L.jpg', '2026-03-04 20:43:26', '2026-03-12 21:25:19');
+INSERT INTO `book` VALUES (4, '红楼梦', '曹雪芹', '文学', '人民文学出版社', '2018-01-01', 9, 0, '中国古典四大名著之一', '9787020002207', 'https://covers.openlibrary.org/b/isbn/9787020002207-L.jpg', '2026-03-04 20:43:26', '2026-03-21 19:55:47');
+INSERT INTO `book` VALUES (5, '明朝那些事儿', '当年明月', '历史', '中国友谊出版公司', '2017-05-01', 5, 0, '通俗明朝历史', '9787505724693', 'https://covers.openlibrary.org/b/isbn/9787505724693-L.jpg', '2026-03-04 20:43:26', '2026-03-12 21:50:49');
+INSERT INTO `book` VALUES (6, '数据结构与算法', '严蔚敏', '计算机', '清华大学出版社', '2018-09-01', 3, 0, '数据结构经典教材', '9787302330646', 'https://covers.openlibrary.org/b/isbn/9787302330646-L.jpg', '2026-03-04 20:43:26', '2026-03-12 21:59:23');
+INSERT INTO `book` VALUES (7, '三国演义', '罗贯中', '文学', '人民文学出版社', '2019-01-01', 6, 0, '中国古典四大名著之一', '9787020008728', 'https://covers.openlibrary.org/b/isbn/9787020008728-L.jpg', '2026-03-04 20:43:26', '2026-04-23 17:29:55');
+INSERT INTO `book` VALUES (8, '人类简史', '尤瓦尔·赫拉利', '科学', '中信出版社', '2016-11-01', 4, 0, '从动物到上帝', '9787508647357', 'https://covers.openlibrary.org/b/isbn/9787508647357-L.jpg', '2026-03-04 20:43:26', '2026-03-12 21:51:35');
+INSERT INTO `book` VALUES (9, '测试', '111', 'literature', '222', '2026-03-02', 5, 1, '无', NULL, NULL, '2026-03-04 20:48:40', '2026-04-16 15:43:17');
+INSERT INTO `book` VALUES (10, '西游记', '吴承恩', '文学', '人民文学出版社', '2018-06-01', 8, 0, '中国古典四大名著之一，讲述唐僧师徒西天取经的故事', '9787020008735', 'https://covers.openlibrary.org/b/isbn/9787020008735-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (11, '水浒传', '施耐庵', '文学', '人民文学出版社', '2017-03-01', 7, 0, '中国古典四大名著之一，讲述梁山好汉的故事', '9787020008742', 'https://covers.openlibrary.org/b/isbn/9787020008742-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (12, 'Spring Boot实战', '丁雪丰', '计算机', '人民邮电出版社', '2021-05-01', 6, 0, 'Spring Boot框架入门与进阶', '9787115417305', 'https://covers.openlibrary.org/b/isbn/9787115417305-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (13, 'MySQL必知必会', 'Ben Forta', '计算机', '人民邮电出版社', '2020-09-01', 5, 0, 'MySQL数据库入门经典教程', '9787115209429', 'https://covers.openlibrary.org/b/isbn/9787115209429-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (14, '活着', '余华', '文学', '作家出版社', '2018-04-01', 10, 0, '余华经典长篇小说，讲述人生的苦难与坚韧', '9787506365437', 'https://covers.openlibrary.org/b/isbn/9787506365437-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (15, '百年孤独', '加西亚·马尔克斯', '文学', '南海出版公司', '2017-08-01', 6, 0, '魔幻现实主义文学经典，布恩迪亚家族百年兴衰', '9787544253994', 'https://covers.openlibrary.org/b/isbn/9787544253994-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (16, '时间简史', '史蒂芬·霍金', '科学', '湖南科学技术出版社', '2019-01-01', 5, 0, '探索宇宙奥秘的科普经典', '9787535732309', 'https://covers.openlibrary.org/b/isbn/9787535732309-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (17, '三体', '刘慈欣', '科幻', '重庆出版社', '2019-06-01', 8, 0, '中国科幻里程碑之作，地球文明与三体文明的碰撞', '9787536692930', 'https://covers.openlibrary.org/b/isbn/9787536692930-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (18, '流浪地球', '刘慈欣', '科幻', '中国华侨出版社', '2020-01-01', 6, 0, '太阳即将毁灭，人类开启流浪地球计划', '9787511349484', 'https://covers.openlibrary.org/b/isbn/9787511349484-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (19, '万历十五年', '黄仁宇', '历史', '中华书局', '2018-08-01', 4, 0, '以大历史观审视明朝关键年份', '9787101054491', 'https://covers.openlibrary.org/b/isbn/9787101054491-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (20, '全球通史', '斯塔夫里阿诺斯', '历史', '北京大学出版社', '2017-01-01', 5, 0, '从史前到21世纪的全球历史', '9787301109489', 'https://covers.openlibrary.org/b/isbn/9787301109489-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (21, '算法导论', 'Thomas H. Cormen', '计算机', '机械工业出版社', '2020-06-01', 4, 0, '计算机算法领域最经典的教材', '9787111407010', 'https://covers.openlibrary.org/b/isbn/9787111407010-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (22, '设计模式', 'Erich Gamma', '计算机', '机械工业出版社', '2019-09-01', 3, 0, '面向对象设计的经典著作', '9787111075752', 'https://covers.openlibrary.org/b/isbn/9787111075752-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (23, '围城', '钱钟书', '文学', '人民文学出版社', '2017-05-01', 7, 0, '钱钟书经典讽刺小说，城里的人想出去，城外的人想进来', '9787020024759', 'https://covers.openlibrary.org/b/isbn/9787020024759-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (24, '平凡的世界', '路遥', '文学', '北京十月文艺出版社', '2018-09-01', 9, 0, '路遥长篇巨著，全景展现中国当代城乡社会生活', '9787530216781', 'https://covers.openlibrary.org/b/isbn/9787530216781-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
+INSERT INTO `book` VALUES (25, '万物简史', '比尔·布莱森', '科学', '接力出版社', '2018-02-01', 5, 0, '一部有关现代科学发展史的科普巨著', '9787544826068', 'https://covers.openlibrary.org/b/isbn/9787544826068-L.jpg', '2026-04-01 10:00:00', '2026-04-01 10:00:00');
 
 -- ----------------------------
 -- Table structure for borrow
@@ -272,6 +274,24 @@ INSERT INTO `borrow` VALUES (24, 18, 6, '2026-04-01', '2026-05-01', NULL, 0, '20
 INSERT INTO `borrow` VALUES (25, 20, 6, '2026-03-15', '2026-04-15', '2026-04-12', 1, '2026-03-15 13:30:00', '2026-04-12 15:00:00');
 INSERT INTO `borrow` VALUES (26, 22, 7, '2026-04-10', '2026-05-10', NULL, 0, '2026-04-10 08:30:00', '2026-04-10 08:30:00');
 INSERT INTO `borrow` VALUES (27, 25, 7, '2026-03-20', '2026-04-20', NULL, 2, '2026-03-20 15:00:00', '2026-04-20 15:00:00');
+INSERT INTO `borrow` VALUES (28, 1, 3, '2026-05-01', '2026-06-01', '2026-05-28', 1, '2026-05-01 09:00:00', '2026-05-28 14:30:00');
+INSERT INTO `borrow` VALUES (29, 3, 4, '2026-05-05', '2026-06-05', '2026-06-01', 1, '2026-05-05 10:15:00', '2026-06-01 11:20:00');
+INSERT INTO `borrow` VALUES (30, 5, 6, '2026-05-08', '2026-06-08', NULL, 0, '2026-05-08 14:00:00', '2026-05-08 14:00:00');
+INSERT INTO `borrow` VALUES (31, 7, 3, '2026-05-10', '2026-06-10', '2026-06-05', 1, '2026-05-10 09:30:00', '2026-06-05 16:45:00');
+INSERT INTO `borrow` VALUES (32, 10, 7, '2026-05-12', '2026-06-12', NULL, 0, '2026-05-12 11:00:00', '2026-05-12 11:00:00');
+INSERT INTO `borrow` VALUES (33, 14, 4, '2026-05-15', '2026-06-15', NULL, 0, '2026-05-15 15:30:00', '2026-05-15 15:30:00');
+INSERT INTO `borrow` VALUES (34, 17, 6, '2026-05-18', '2026-06-18', '2026-06-08', 1, '2026-05-18 08:45:00', '2026-06-08 10:00:00');
+INSERT INTO `borrow` VALUES (35, 19, 3, '2026-05-20', '2026-06-20', NULL, 0, '2026-05-20 13:20:00', '2026-05-20 13:20:00');
+INSERT INTO `borrow` VALUES (36, 22, 7, '2026-05-22', '2026-06-22', NULL, 0, '2026-05-22 10:00:00', '2026-05-22 10:00:00');
+INSERT INTO `borrow` VALUES (37, 2, 4, '2026-05-25', '2026-06-25', NULL, 0, '2026-05-25 16:00:00', '2026-05-25 16:00:00');
+INSERT INTO `borrow` VALUES (38, 8, 6, '2026-05-28', '2026-06-28', NULL, 0, '2026-05-28 09:15:00', '2026-05-28 09:15:00');
+INSERT INTO `borrow` VALUES (39, 4, 3, '2026-06-01', '2026-07-01', NULL, 0, '2026-06-01 10:30:00', '2026-06-01 10:30:00');
+INSERT INTO `borrow` VALUES (40, 6, 4, '2026-06-02', '2026-07-02', NULL, 0, '2026-06-02 14:00:00', '2026-06-02 14:00:00');
+INSERT INTO `borrow` VALUES (41, 15, 7, '2026-06-03', '2026-07-03', NULL, 0, '2026-06-03 09:45:00', '2026-06-03 09:45:00');
+INSERT INTO `borrow` VALUES (42, 20, 3, '2026-06-05', '2026-07-05', NULL, 0, '2026-06-05 11:30:00', '2026-06-05 11:30:00');
+INSERT INTO `borrow` VALUES (43, 24, 6, '2026-06-06', '2026-07-06', NULL, 0, '2026-06-06 15:00:00', '2026-06-06 15:00:00');
+INSERT INTO `borrow` VALUES (44, 9, 4, '2026-06-08', '2026-07-08', NULL, 0, '2026-06-08 08:30:00', '2026-06-08 08:30:00');
+INSERT INTO `borrow` VALUES (45, 16, 7, '2026-06-09', '2026-07-09', NULL, 0, '2026-06-09 13:00:00', '2026-06-09 13:00:00');
 
 -- ----------------------------
 -- Table structure for sys_permission
@@ -408,14 +428,14 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'sysadmin', 'admin123', '系统管理员', 0, '13800138000', 'admin@library.com', 0, '2026-03-05 15:55:47', '2026-03-21 20:58:26', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/cd323ecc-39b5-4775-9d2e-1d5bf762cbf3.jpg');
-INSERT INTO `sys_user` VALUES (2, 'libadmin', 'admin123', '图书管理员', 1, '13800138001', 'libadmin@library.com', 0, '2026-03-05 15:55:47', '2026-03-12 20:33:25', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/f26d732f-dd5a-4421-9a42-44d6f931d0f7.jpg');
-INSERT INTO `sys_user` VALUES (3, 'zhangsan', '123456', '张三', 1, '13800138002', 'zhangsan@library.com', 0, '2026-03-05 15:55:47', '2026-04-23 17:30:10', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/01abe9b7-b6bd-4a58-b3e6-b22511eccad0.jpg');
-INSERT INTO `sys_user` VALUES (4, 'lisi', '123456', '李四', 0, '13800138003', 'lisi@library.com', 0, '2026-03-05 15:55:47', '2026-03-05 15:55:47', NULL);
-INSERT INTO `sys_user` VALUES (6, 'wangwu', '123456', '王五', 1, '13800138002', 'wangwu@example.com', 0, '2026-03-21 20:24:56', '2026-03-21 20:24:56', NULL);
-INSERT INTO `sys_user` VALUES (7, 'zhaoliu', '123456', '赵六', 0, '13800138003', 'zhaoliu@example.com', 0, '2026-03-21 20:24:56', '2026-03-21 20:24:56', NULL);
-INSERT INTO `sys_user` VALUES (8, '测试用户2', '123456', 'test2', 0, '18179658592', '325.lxxxx@gmail.com', 0, '2026-03-21 20:24:56', '2026-04-23 11:12:09', NULL);
-INSERT INTO `sys_user` VALUES (9, 'test_user2', '123456', 'test_user2', 0, '', '', 0, '2026-04-23 10:59:43', '2026-04-23 10:59:43', NULL);
+INSERT INTO `sys_user` VALUES (1, 'sysadmin', '$2a$10$tMM7pg9WyoxSwOSCsaQuwe45G5S7H3UBofRs/r8FklE0E3C/gGVSS', '系统管理员', 0, '13800138000', 'admin@library.com', 0, '2026-03-05 15:55:47', '2026-03-21 20:58:26', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/cd323ecc-39b5-4775-9d2e-1d5bf762cbf3.jpg');
+INSERT INTO `sys_user` VALUES (2, 'libadmin', '$2a$10$tMM7pg9WyoxSwOSCsaQuwe45G5S7H3UBofRs/r8FklE0E3C/gGVSS', '图书管理员', 1, '13800138001', 'libadmin@library.com', 0, '2026-03-05 15:55:47', '2026-03-12 20:33:25', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/f26d732f-dd5a-4421-9a42-44d6f931d0f7.jpg');
+INSERT INTO `sys_user` VALUES (3, 'zhangsan', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', '张三', 1, '13800138002', 'zhangsan@library.com', 0, '2026-03-05 15:55:47', '2026-04-23 17:30:10', 'https://liuxiang1234.oss-cn-beijing.aliyuncs.com/avatars/01abe9b7-b6bd-4a58-b3e6-b22511eccad0.jpg');
+INSERT INTO `sys_user` VALUES (4, 'lisi', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', '李四', 0, '13800138003', 'lisi@library.com', 0, '2026-03-05 15:55:47', '2026-03-05 15:55:47', NULL);
+INSERT INTO `sys_user` VALUES (6, 'wangwu', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', '王五', 1, '13800138002', 'wangwu@example.com', 0, '2026-03-21 20:24:56', '2026-03-21 20:24:56', NULL);
+INSERT INTO `sys_user` VALUES (7, 'zhaoliu', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', '赵六', 0, '13800138003', 'zhaoliu@example.com', 0, '2026-03-21 20:24:56', '2026-03-21 20:24:56', NULL);
+INSERT INTO `sys_user` VALUES (8, '测试用户2', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', 'test2', 0, '18179658592', '325.lxxxx@gmail.com', 0, '2026-03-21 20:24:56', '2026-04-23 11:12:09', NULL);
+INSERT INTO `sys_user` VALUES (9, 'test_user2', '$2a$10$xdFevbHF78V9VeqEBzUbJeEXo4vnKk1x5yuwqgiFn/6Xft.cYp942', 'test_user2', 0, '', '', 0, '2026-04-23 10:59:43', '2026-04-23 10:59:43', NULL);
 
 -- ----------------------------
 -- Table structure for sys_user_role

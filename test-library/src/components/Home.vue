@@ -23,11 +23,38 @@
             <div class="stat-card__value">{{ item.value }}</div>
             <div class="stat-card__label">{{ item.label }}</div>
           </div>
-          <div class="stat-card__trend" v-if="item.trend">
-            <i :class="item.trend > 0 ? 'el-icon-top' : 'el-icon-bottom'"></i>
-            <span>{{ Math.abs(item.trend) }}%</span>
-          </div>
         </div>
+      </el-col>
+    </el-row>
+
+    <!-- 图表区域 -->
+    <el-row :gutter="20" class="chart-row">
+      <el-col :xs="24" :lg="14">
+        <el-card shadow="hover" class="custom-card">
+          <div slot="header" class="card-header">
+            <span><i class="el-icon-data-line"></i>借阅趋势（近6个月）</span>
+          </div>
+          <div ref="trendChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :lg="10">
+        <el-card shadow="hover" class="custom-card">
+          <div slot="header" class="card-header">
+            <span><i class="el-icon-pie-chart"></i>图书分类分布</span>
+          </div>
+          <div ref="categoryChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="chart-row">
+      <el-col :xs="24">
+        <el-card shadow="hover" class="custom-card">
+          <div slot="header" class="card-header">
+            <span><i class="el-icon-data-analysis"></i>热门图书 Top 5</span>
+          </div>
+          <div ref="topBooksChart" class="chart-container"></div>
+        </el-card>
       </el-col>
     </el-row>
 
@@ -132,6 +159,7 @@
 </template>
 
 <script>
+import * as echarts from 'echarts'
 import { getStats } from '@/api/stats'
 import { getBorrows } from '@/api/borrow'
 import { getHomeAnnouncements } from '@/api/announcement'
@@ -151,7 +179,8 @@ export default {
       }),
       stats: [],
       recentBorrows: [],
-      notices: []
+      notices: [],
+      charts: []
     }
   },
   computed: {
@@ -170,6 +199,15 @@ export default {
     }
     this.loadNotices()
   },
+  mounted() {
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.handleResize)
+    })
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+    this.charts.forEach(chart => chart.dispose())
+  },
   methods: {
     loadUserInfo() {
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
@@ -181,28 +219,136 @@ export default {
       try {
         const res = await getStats()
         this.stats = [
-          { icon: 'el-icon-reading', value: res.totalBooks || 0, label: '图书总数', type: 'primary', trend: 12 },
+          { icon: 'el-icon-reading', value: res.totalBooks || 0, label: '图书总数', type: 'primary' },
           ...(!this.isAdmin ? [
-            { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '已借出', type: 'warning', trend: -5 }
+            { icon: 'el-icon-sold-out', value: res.borrowedBooks || 0, label: '借阅中', type: 'warning' }
           ] : []),
-          { icon: 'el-icon-user', value: res.totalUsers || 0, label: '用户总数', type: 'info', trend: 8 },
+          { icon: 'el-icon-user', value: res.totalUsers || 0, label: '用户总数', type: 'info' },
           ...(!this.isAdmin ? [
-            { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', type: 'danger', trend: -20 }
+            { icon: 'el-icon-warning', value: res.overdueBooks || 0, label: '逾期未还', type: 'danger' }
           ] : [])
         ]
+
+        this.$nextTick(() => {
+          this.initTrendChart(res.monthlyTrend || [])
+          this.initCategoryChart(res.categoryDistribution || [])
+          this.initTopBooksChart(res.topBooks || [])
+        })
       } catch (error) {
         console.error('加载统计数据失败:', error)
-        this.stats = [
-          { icon: 'el-icon-reading', value: 0, label: '图书总数', type: 'primary', trend: 0 },
-          ...(!this.isAdmin ? [
-            { icon: 'el-icon-sold-out', value: 0, label: '已借出', type: 'warning', trend: 0 }
-          ] : []),
-          { icon: 'el-icon-user', value: 0, label: '用户总数', type: 'info', trend: 0 },
-          ...(!this.isAdmin ? [
-            { icon: 'el-icon-warning', value: 0, label: '逾期未还', type: 'danger', trend: 0 }
-          ] : [])
-        ]
       }
+    },
+    initTrendChart(data) {
+      if (!this.$refs.trendChart) return
+      const chart = echarts.init(this.$refs.trendChart)
+      this.charts.push(chart)
+
+      const months = data.map(item => item.month || item.MONTH)
+      const counts = data.map(item => item.count || item.COUNT || 0)
+
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: months,
+          axisLabel: { color: '#909399' }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { color: '#909399' },
+          splitLine: { lineStyle: { type: 'dashed', color: '#eee' } }
+        },
+        series: [{
+          name: '借阅次数',
+          type: 'line',
+          smooth: true,
+          data: counts,
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
+              { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+            ])
+          },
+          lineStyle: { color: '#667eea', width: 3 },
+          itemStyle: { color: '#667eea' }
+        }]
+      })
+    },
+    initCategoryChart(data) {
+      if (!this.$refs.categoryChart) return
+      const chart = echarts.init(this.$refs.categoryChart)
+      this.charts.push(chart)
+
+      const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7']
+
+      chart.setOption({
+        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+        legend: {
+          orient: 'vertical',
+          right: '5%',
+          top: 'center',
+          textStyle: { color: '#606266' }
+        },
+        series: [{
+          type: 'pie',
+          radius: ['40%', '70%'],
+          center: ['40%', '50%'],
+          avoidLabelOverlap: false,
+          itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+          label: { show: false },
+          emphasis: {
+            label: { show: true, fontSize: 14, fontWeight: 'bold' }
+          },
+          data: data.map((item, index) => ({
+            name: item.name || item.NAME,
+            value: item.value || item.VALUE || 0,
+            itemStyle: { color: colors[index % colors.length] }
+          }))
+        }]
+      })
+    },
+    initTopBooksChart(data) {
+      if (!this.$refs.topBooksChart) return
+      const chart = echarts.init(this.$refs.topBooksChart)
+      this.charts.push(chart)
+
+      const names = data.map(item => {
+        const name = item.name || item.NAME || ''
+        return name.length > 8 ? name.substring(0, 8) + '...' : name
+      })
+      const counts = data.map(item => item.count || item.COUNT || 0)
+
+      chart.setOption({
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: names,
+          axisLabel: { color: '#909399', rotate: 15 }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { color: '#909399' },
+          splitLine: { lineStyle: { type: 'dashed', color: '#eee' } }
+        },
+        series: [{
+          name: '借阅次数',
+          type: 'bar',
+          barWidth: '40%',
+          data: counts,
+          itemStyle: {
+            borderRadius: [6, 6, 0, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#667eea' },
+              { offset: 1, color: '#764ba2' }
+            ])
+          }
+        }]
+      })
+    },
+    handleResize() {
+      this.charts.forEach(chart => chart.resize())
     },
     async loadRecentBorrows() {
       try {
@@ -383,19 +529,14 @@ export default {
   margin-top: 4px;
 }
 
-.stat-card__trend {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-size: var(--font-size-xs);
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: rgba(67, 233, 123, 0.1);
-  color: #2eb872;
+/* ========== 图表区域 ========== */
+.chart-row {
+  margin-bottom: var(--spacing-lg);
 }
 
-.stat-card__trend i {
-  font-size: 10px;
+.chart-container {
+  height: 300px;
+  width: 100%;
 }
 
 /* ========== 内容区域 ========== */
@@ -471,6 +612,8 @@ export default {
 .notice-item__icon--1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 .notice-item__icon--2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
 .notice-item__icon--3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.notice-item__icon--4 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.notice-item__icon--5 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
 
 .notice-item__content {
   flex: 1;

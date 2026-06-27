@@ -5,6 +5,8 @@ import com.library.entity.AiConversation;
 import com.library.entity.AiMessage;
 import com.library.mapper.AiConversationMapper;
 import com.library.mapper.AiMessageMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ *会话管理，不涉及业务，对接数据库
+ */
 @Service
 public class AiConversationService {
+
+    private static final Logger log = LoggerFactory.getLogger(AiConversationService.class);
 
     // 用于返回会话信息的内部类
     public static class Conversation {
@@ -167,7 +174,7 @@ public class AiConversationService {
             conversation.setUpdateTime(LocalDateTime.now());
             conversationMapper.updateById(conversation);
         } catch (Exception e) {
-            System.err.println("生成摘要失败: " + e.getMessage());
+            log.error("生成摘要失败", e);
         }
     }
 

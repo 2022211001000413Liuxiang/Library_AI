@@ -1,6 +1,7 @@
 package com.library.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.library.annotation.RequireRole;
 import com.library.entity.Announcement;
 import com.library.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/announcements")
-@CrossOrigin
 public class AnnouncementController {
 
     @Autowired
     private AnnouncementService announcementService;
-//公告页面
+
+    @RequireRole({"admin"})
     @GetMapping
     public Map<String, Object> getAnnouncements(
             @RequestParam(defaultValue = "1") int current,
@@ -34,7 +35,7 @@ public class AnnouncementController {
         result.put("pages", page.getPages());
         return result;
     }
-//首页
+
     @GetMapping("/home")
     public Map<String, Object> getHomeAnnouncements(@RequestParam(defaultValue = "5") int limit) {
         List<Announcement> list = announcementService.getHomeAnnouncements(limit);
@@ -50,6 +51,7 @@ public class AnnouncementController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @PostMapping
     public Map<String, Object> save(@RequestBody Announcement announcement) {
         Map<String, Object> result = new HashMap<>();
@@ -57,6 +59,7 @@ public class AnnouncementController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @PutMapping("/{id}")
     public Map<String, Object> update(@PathVariable Long id, @RequestBody Announcement announcement) {
         announcement.setId(id);
@@ -65,6 +68,7 @@ public class AnnouncementController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @DeleteMapping("/{id}")
     public Map<String, Object> delete(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();

@@ -42,3 +42,27 @@ export function deleteBook(id) {
     method: 'delete'
   })
 }
+
+// 上传图书封面
+export function uploadBookCover(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/books/cover/upload',
+    method: 'post',
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
+// 批量导入图书
+export function importBooks(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/books/import',
+    method: 'post',
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}

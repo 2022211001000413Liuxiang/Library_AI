@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mvn compile -q)"
+      "Bash(mvn compile -q)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(mvn -q compile exec:java -Dexec.mainClass=\"com.library.utils.HashGenerator\" -Dexec.classpathScope=compile)",
+      "Bash(npm install *)",
+      "Bash(ls -la ~/.claude/ 2>/dev/null || echo \"Directory not found\")",
+      "Read(//c/Users/aa/.claude/**)",
+      "Bash(ls -la ~/.code-pet/ 2>/dev/null || echo \"Directory not found\")",
+      "Read(//c/Users/aa/.code-pet/**)",
+      "Bash(node -e \"try { const electronPath = require\\('electron'\\); console.log\\('Electron path:', electronPath\\); const fs = require\\('fs'\\); console.log\\('Exists:', fs.existsSync\\(electronPath\\)\\); } catch\\(e\\) { console.log\\('Error:', e.message\\); }\")",
+      "Bash(npx install-electron *)",
+      "Bash(ELECTRON_MIRROR=\"https://npmmirror.com/mirrors/electron/\" npm install electron --save)",
+      "Bash(rm -f ~/.code-pet/installing)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\aa\\.code-pet"
     ]
   }
 }

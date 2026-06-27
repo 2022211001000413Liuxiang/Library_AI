@@ -1,20 +1,22 @@
 package com.library.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.library.annotation.RequireRole;
 import com.library.entity.SysUser;
 import com.library.mapper.SysUserMapper;
 import com.library.service.UserService;
 import com.library.utils.OssUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin
 public class UserController {
 
     @Autowired
@@ -26,6 +28,10 @@ public class UserController {
     @Autowired
     private OssUtils ossUtils;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @RequireRole({"admin", "librarian"})
     @GetMapping("/users")
     public Map<String, Object> getUsers(
             @RequestParam(defaultValue = "1") int current,
@@ -42,6 +48,7 @@ public class UserController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @GetMapping("/users/{id}")
     public Map<String, Object> getById(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -49,6 +56,7 @@ public class UserController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @PostMapping("/users")
     public Map<String, Object> save(@RequestBody SysUser user) {
         Map<String, Object> result = new HashMap<>();
@@ -56,6 +64,7 @@ public class UserController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @PutMapping("/users/{id}")
     public Map<String, Object> update(@PathVariable Long id, @RequestBody SysUser user) {
         user.setId(id);
@@ -64,6 +73,7 @@ public class UserController {
         return result;
     }
 
+    @RequireRole({"admin"})
     @DeleteMapping("/users/{id}")
     public Map<String, Object> delete(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -71,16 +81,13 @@ public class UserController {
         return result;
     }
 
-    // 个人中心相关API
-
-    /**
-     * 获取当前登录用户信息
-     */
     @GetMapping("/profile")
-    public Map<String, Object> getProfile(@RequestParam(required = false) Long userId) {
+    public Map<String, Object> getProfile(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
-            userId = 1L;
+            result.put("data", null);
+            return result;
         }
         SysUser user = sysUserMapper.selectById(userId);
         if (user != null) {
@@ -92,16 +99,13 @@ public class UserController {
         return result;
     }
 
-    /**
-     * 更新个人信息
-     */
     @PutMapping("/profile")
-    public Map<String, Object> updateProfile(@RequestBody Map<String, Object> params) {
+    public Map<String, Object> updateProfile(@RequestBody Map<String, Object> params, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-        Long userId = params.get("id") != null ? Long.parseLong(params.get("id").toString()) : null;
+        Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             result.put("success", false);
-            result.put("message", "用户ID不能为空");
+            result.put("message", "未登录");
             return result;
         }
 
@@ -117,12 +121,9 @@ public class UserController {
         return result;
     }
 
-    /**
-     * 修改密码
-     */
     @PutMapping("/password")
     public Map<String, Object> changePassword(@RequestBody Map<String, String> params,
-                                              javax.servlet.http.HttpServletRequest request) {
+                                              HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
@@ -139,7 +140,6 @@ public class UserController {
             return result;
         }
 
-        // 从JWT中获取当前用户ID
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             result.put("success", false);
@@ -154,15 +154,13 @@ public class UserController {
             return result;
         }
 
-        // 验证旧密码
-        if (!oldPassword.equals(user.getPassword())) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             result.put("success", false);
             result.put("message", "当前密码错误");
             return result;
         }
 
-        // 更新密码
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdateTime(java.time.LocalDateTime.now());
         int rows = sysUserMapper.updateById(user);
         result.put("success", rows > 0);
@@ -170,9 +168,6 @@ public class UserController {
         return result;
     }
 
-    /**
-     * 上传头像到 OSS
-     */
     @PostMapping("/avatar/upload")
     public Map<String, Object> uploadAvatar(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
@@ -193,13 +188,10 @@ public class UserController {
         return result;
     }
 
-    /**
-     * 更新用户头像
-     */
     @PutMapping("/avatar")
-    public Map<String, Object> updateAvatar(@RequestBody Map<String, Object> params) {
+    public Map<String, Object> updateAvatar(@RequestBody Map<String, Object> params, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-        Long userId = params.get("userId") != null ? Long.parseLong(params.get("userId").toString()) : null;
+        Long userId = (Long) request.getAttribute("userId");
         String avatarUrl = params.get("avatarUrl") != null ? params.get("avatarUrl").toString() : null;
 
         if (userId == null || avatarUrl == null) {

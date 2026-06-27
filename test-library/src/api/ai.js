@@ -1,11 +1,10 @@
 import request from './index'
 
 // 创建新会话
-export function createSession(userId) {
+export function createSession() {
   return request({
     url: '/ai/session',
-    method: 'post',
-    data: { userId }
+    method: 'post'
   })
 }
 
@@ -26,11 +25,10 @@ export function getHistory(sessionId) {
 }
 
 // 获取用户的所有会话列表
-export function getUserSessions(userId) {
+export function getUserSessions() {
   return request({
     url: '/ai/sessions',
-    method: 'get',
-    params: { userId }
+    method: 'get'
   })
 }
 
@@ -44,19 +42,37 @@ export function endSession(sessionId) {
 }
 
 // 智能推荐图书
-export function recommendBooks(preference, userId, sessionId) {
+export function recommendBooks(preference, sessionId) {
   return request({
     url: '/ai/recommend',
     method: 'post',
-    data: { preference, userId, sessionId }
+    data: { preference, sessionId }
   })
 }
 
 // 图书咨询
-export function chatWithAI(question, userId, sessionId) {
+export function chatWithAI(question, sessionId) {
   return request({
     url: '/ai/chat',
     method: 'post',
-    data: { question, userId, sessionId }
+    data: { question, sessionId }
+  })
+}
+
+// 图书摘要
+export function summarizeBook(bookName, sessionId) {
+  return request({
+    url: '/ai/summarize',
+    method: 'post',
+    data: { bookName, sessionId }
+  })
+}
+
+// 相似图书推荐
+export function recommendSimilar(bookName, sessionId) {
+  return request({
+    url: '/ai/similar',
+    method: 'post',
+    data: { bookName, sessionId }
   })
 }

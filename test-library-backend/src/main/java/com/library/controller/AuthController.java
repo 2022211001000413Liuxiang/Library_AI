@@ -9,6 +9,7 @@ import com.library.mapper.SysUserMapper;
 import com.library.mapper.SysUserRoleMapper;
 import com.library.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin
 public class AuthController {
 
     @Autowired
@@ -31,6 +31,9 @@ public class AuthController {
     @Autowired
     private SysRolePermissionMapper sysRolePermissionMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> params) {
         Map<String, Object> result = new HashMap<>();
@@ -43,40 +46,33 @@ public class AuthController {
             return result;
         }
 
-        // 从 sys_user 表验证用户
         QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
         wrapper.eq("username", username);
-        wrapper.eq("password", password);
         wrapper.eq("status", 0);
         SysUser sysUser = sysUserMapper.selectOne(wrapper);
-
-        if (sysUser == null) {
+//取出加密的盐值对传递过来的密码进行加密再与数据库中的密码匹配
+        if (sysUser == null || !passwordEncoder.matches(password, sysUser.getPassword())) {
             result.put("success", false);
             result.put("message", "用户名或密码错误");
             return result;
         }
 
-        // 查询用户关联的角色ID列表->可能有多个角色（方案废弃）
         List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(sysUser.getId());
 
-        // 查询角色信息
         List<SysRole> roles = new ArrayList<>();
         if (roleIds != null && !roleIds.isEmpty()) {
             roles = sysRoleMapper.selectBatchIds(roleIds);
         }
 
-        // 获取角色key列表
         List<String> roleKeys = roles.stream()
                 .map(SysRole::getRoleKey)
                 .collect(Collectors.toList());
 
-        // 查询角色关联的权限列表
         List<String> permissions = sysRolePermissionMapper.selectPermKeysByRoleIds(roleIds);
         if (permissions == null) {
             permissions = new ArrayList<>();
         }
 
-        // 构建返回数据
         Map<String, Object> userData = new HashMap<>();
         userData.put("id", sysUser.getId());
         userData.put("username", sysUser.getUsername());
@@ -88,18 +84,14 @@ public class AuthController {
         userData.put("roles", roleKeys);
         userData.put("permissions", permissions);
 
-        // 确定主要角色（用于userType和role）
-        // 角色优先级：admin > librarian > reader
         String mainRole = "reader";
         if (roleKeys.contains("admin")) {
             mainRole = "admin";
         } else if (roleKeys.contains("librarian")) {
             mainRole = "librarian";
         }
-        // userType: admin/librarian 表示工作人员，reader 表示读者（借阅管理与我的借阅）
         String userType = "reader".equals(mainRole) ? "reader" : "staff";
 
-        // 生成 JWT token
         String token = JwtUtils.generateToken(sysUser.getId(), sysUser.getUsername(), mainRole);
 
         result.put("success", true);
@@ -135,13 +127,12 @@ public class AuthController {
             result.put("message", "用户名不能为空");
             return result;
         }
-        if (password == null || password.trim().isEmpty()) {
+        if (password == null || password.length() < 6) {
             result.put("success", false);
-            result.put("message", "密码不能为空");
+            result.put("message", "密码长度不能少于6位");
             return result;
         }
 
-        // 检查用户名是否已存在
         QueryWrapper<SysUser> checkWrapper = new QueryWrapper<>();
         checkWrapper.eq("username", username);
         SysUser existingUser = sysUserMapper.selectOne(checkWrapper);
@@ -151,10 +142,9 @@ public class AuthController {
             return result;
         }
 
-        // 创建用户
         SysUser newUser = new SysUser();
         newUser.setUsername(username);
-        newUser.setPassword(password);
+        newUser.setPassword(passwordEncoder.encode(password));
         newUser.setName(name);
         newUser.setGender(gender);
         newUser.setPhone(phone);
@@ -164,7 +154,6 @@ public class AuthController {
         newUser.setUpdateTime(java.time.LocalDateTime.now());
         sysUserMapper.insert(newUser);
 
-        // 分配默认角色 reader (role_id = 3)
         sysUserRoleMapper.insertUserRole(newUser.getId(), 3L);
 
         result.put("success", true);

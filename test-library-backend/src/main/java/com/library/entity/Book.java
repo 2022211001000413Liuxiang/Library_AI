@@ -23,6 +23,8 @@ public class Book {
     private Integer stock;
     private Integer status;
     private String description;
+    private String isbn;
+    private String coverUrl;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

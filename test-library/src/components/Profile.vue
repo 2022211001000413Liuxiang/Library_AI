@@ -198,13 +198,7 @@ export default {
     },
     async loadUserInfo() {
       try {
-        const userInfoStr = localStorage.getItem('userInfo')
-        let userId = null
-        if (userInfoStr) {
-          const userInfo = JSON.parse(userInfoStr)
-          userId = userInfo.id
-        }
-        const res = await getProfile(userId)
+        const res = await getProfile()
         if (res.data) {
           this.userInfo = { ...this.userInfo, ...res.data }
           this.form = {
@@ -234,7 +228,7 @@ export default {
       try {
         const res = await uploadAvatar(file)
         if (res.success) {
-          await updateAvatar(this.userInfo.id, res.url)
+          await updateAvatar(res.url)
           this.userInfo.avatar = res.url
           const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
           userInfo.avatar = res.url

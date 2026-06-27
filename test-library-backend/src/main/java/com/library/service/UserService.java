@@ -7,14 +7,13 @@ import com.library.entity.SysUser;
 import com.library.mapper.SysUserMapper;
 import com.library.mapper.SysUserRoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class UserService {
@@ -24,6 +23,9 @@ public class UserService {
 
     @Autowired
     private SysUserRoleMapper sysUserRoleMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public IPage<SysUser> getUsers(int current, int size, String name, String username) {
         Page<SysUser> page = new Page<>(current, size);
@@ -37,7 +39,6 @@ public class UserService {
         wrapper.orderByDesc("create_time");
         IPage<SysUser> result = sysUserMapper.selectPage(page, wrapper);
 
-        // 补充角色信息
         for (SysUser user : result.getRecords()) {
             List<Long> roleIds = sysUserRoleMapper.selectRoleIdsByUserId(user.getId());
             user.setRole(getRoleKeyById(roleIds));
@@ -61,11 +62,12 @@ public class UserService {
         user.setUpdateTime(LocalDateTime.now());
         user.setStatus(0);
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            user.setPassword("123456");
+            user.setPassword(passwordEncoder.encode("123456"));
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         sysUserMapper.insert(user);
 
-        // 分配角色
         Long roleId = getRoleIdByRoleKey(user.getRole());
         if (roleId != null) {
             sysUserRoleMapper.insertUserRole(user.getId(), roleId);
@@ -77,9 +79,10 @@ public class UserService {
     @Transactional
     public boolean update(SysUser user) {
         user.setUpdateTime(LocalDateTime.now());
+        // 不允许通过更新接口修改密码
+        user.setPassword(null);
         sysUserMapper.updateById(user);
 
-        // 更新用户角色关联
         if (user.getRole() != null) {
             Long roleId = getRoleIdByRoleKey(user.getRole());
             if (roleId != null) {

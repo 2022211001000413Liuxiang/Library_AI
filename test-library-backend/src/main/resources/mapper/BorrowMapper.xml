@@ -17,8 +17,9 @@
     </resultMap>
 <!--单页数据查询-->
     <select id="selectBorrowPage" resultMap="BaseResultMap">
-        SELECT b.*,
+        SELECT b.id, b.book_id, b.user_id, b.borrow_date, b.due_date, b.return_date,
                CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               b.create_time, b.update_time,
                bk.name as bookName, u.name as userName, u.avatar as userAvatar
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
@@ -68,8 +69,9 @@
     </select>
 <!--根据id查借阅记录-->
     <select id="selectBorrowPageByUserId" resultMap="BaseResultMap">
-        SELECT b.*,
+        SELECT b.id, b.book_id, b.user_id, b.borrow_date, b.due_date, b.return_date,
                CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               b.create_time, b.update_time,
                bk.name as bookName, u.name as userName
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
@@ -90,13 +92,33 @@
     </select>
 <!--查询单条详情-->
     <select id="selectBorrowById" resultMap="BaseResultMap">
-        SELECT b.*,
+        SELECT b.id, b.book_id, b.user_id, b.borrow_date, b.due_date, b.return_date,
                CASE WHEN b.status = 0 AND b.due_date &lt; CURDATE() THEN 2 ELSE b.status END AS status,
+               b.create_time, b.update_time,
                bk.name as bookName, u.name as userName
         FROM borrow b
         LEFT JOIN book bk ON b.book_id = bk.id
         LEFT JOIN sys_user u ON b.user_id = u.id
         WHERE b.id = #{id}
+    </select>
+
+    <!-- 按月借阅趋势 -->
+    <select id="selectMonthlyTrend" resultType="java.util.Map">
+        SELECT DATE_FORMAT(borrow_date, '%Y-%m') as month, COUNT(*) as count
+        FROM borrow
+        WHERE borrow_date >= DATE_SUB(CURDATE(), INTERVAL #{months} MONTH)
+        GROUP BY DATE_FORMAT(borrow_date, '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <!-- 热门图书 Top N -->
+    <select id="selectTopBooks" resultType="java.util.Map">
+        SELECT bk.name as name, COUNT(*) as count
+        FROM borrow b
+        LEFT JOIN book bk ON b.book_id = bk.id
+        GROUP BY b.book_id, bk.name
+        ORDER BY count DESC
+        LIMIT #{limit}
     </select>
 
 </mapper>

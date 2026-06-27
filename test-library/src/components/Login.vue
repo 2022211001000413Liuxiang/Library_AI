@@ -40,7 +40,7 @@
               </div>
               <div class="feature-text">
                 <h4>AI 助手</h4>
-                <p>智能推荐·语音交互</p>
+                <p>智能推荐·高效借阅</p>
               </div>
             </div>
           </div>

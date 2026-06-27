@@ -1,22 +1,24 @@
 package com.library.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.library.annotation.RequireRole;
 import com.library.entity.Borrow;
 import com.library.service.BorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/borrows")
-@CrossOrigin
 public class BorrowController {
 
     @Autowired
     private BorrowService borrowService;
 
+    @RequireRole({"admin", "librarian"})
     @GetMapping
     public Map<String, Object> getBorrows(
             @RequestParam(defaultValue = "1") int current,
@@ -26,17 +28,11 @@ public class BorrowController {
             @RequestParam(required = false) Integer status) {
         IPage<Borrow> page = borrowService.getBorrows(current, size, bookName, userName, status);
         Map<String, Object> result = new HashMap<>();
-        //返回当前页所有记录，mp在执行sql时自动添加limit
         result.put("data", page.getRecords());
-        //返回页总数
         result.put("total", page.getTotal());
-        //获得当前页码
         result.put("current", page.getCurrent());
-        //返回每页记录数
         result.put("size", page.getSize());
-        //返回总页数
         result.put("pages", page.getPages());
-        // 返回统计数据（包含总数）
         Map<String, Object> stats = new HashMap<>();
         stats.put("total", page.getTotal());
         stats.put("borrowing", borrowService.getBorrowingCount());
@@ -54,12 +50,13 @@ public class BorrowController {
     }
 
     @PostMapping
-    public Map<String, Object> borrow(@RequestBody Borrow borrow) {
+    public Map<String, Object> borrow(@RequestBody Borrow borrow, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         result.put("success", borrowService.borrowBook(borrow));
         return result;
     }
 
+    @RequireRole({"admin", "librarian"})
     @PutMapping("/{id}/return")
     public Map<String, Object> returnBook(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -67,15 +64,13 @@ public class BorrowController {
         return result;
     }
 
-    /**
-     * 获取当前用户的借阅记录（读者专用）
-     */
     @GetMapping("/my")
     public Map<String, Object> getMyBorrows(
             @RequestParam(defaultValue = "1") int current,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer status,
-            @RequestParam Long userId) {
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         IPage<Borrow> page = borrowService.getBorrowsByUserId(current, size, userId, status);
         Map<String, Object> result = new HashMap<>();
         result.put("data", page.getRecords());
@@ -83,7 +78,6 @@ public class BorrowController {
         result.put("current", page.getCurrent());
         result.put("size", page.getSize());
         result.put("pages", page.getPages());
-        // 返回统计数据（包含总数）
         Map<String, Object> stats = new HashMap<>();
         stats.put("total", page.getTotal());
         stats.put("borrowing", borrowService.getBorrowingCountByUserId(userId));

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BookMapper extends BaseMapper<Book> {
 
@@ -19,4 +20,7 @@ public interface BookMapper extends BaseMapper<Book> {
             "ORDER BY create_time DESC" +
             "</script>")
     List<Book> searchBooks(@Param("name") String name, @Param("author") String author, @Param("category") String category);
+
+    @Select("SELECT COALESCE(category, '未分类') as name, COUNT(*) as value FROM book GROUP BY category ORDER BY value DESC")
+    List<Map<String, Object>> selectCategoryDistribution();
 }
